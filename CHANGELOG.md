@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.15.0
+
+- Expanded README, user guide, architecture, and development documentation for the current VibeCast feature set.
+- Documented local storage behavior, data sources, validation steps, offline behavior, and service-worker update notes.
+
 ## 1.14.0
 
 - Renamed the app to VibeCast across the UI, install metadata, fallback copy, and documentation.

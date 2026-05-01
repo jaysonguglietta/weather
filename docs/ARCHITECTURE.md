@@ -1,6 +1,14 @@
 # Architecture
 
-VibeCast is intentionally small: it is a static frontend app that talks directly to Open-Meteo from the browser.
+VibeCast is intentionally small: it is a static frontend app that talks directly to public weather and almanac APIs from the browser. No server, build step, account system, or API key is required.
+
+## Design Goals
+
+- Keep the first screen useful as an actual app, not a landing page.
+- Keep forecast calls transparent and browser-friendly.
+- Generate playful daily extras locally when possible.
+- Preserve user preferences locally without adding accounts or tracking.
+- Respect reduced-motion preferences for decorative animation.
 
 ## File Map
 
@@ -23,13 +31,15 @@ VibeCast is intentionally small: it is a static frontend app that talks directly
 8. Today in History fetches Wikimedia On This Day events for the forecast date and falls back to local events if unavailable.
 9. The current panel, advice panel, trivia panel, word panel, horoscope panel, happy story panel, Today in History section, animated scene, 90% transparent page overlay, hourly chart, Weather News section, seven-day list, and detail panel are rendered from the response data.
 10. Favorites, selected zodiac sign, and unit preferences are stored in `localStorage`.
+11. The service worker registers after initialization and caches static assets for repeat visits.
 
 ## Data Sources
 
 Open-Meteo is used because it supports browser calls without an API key.
 Zippopotam.us is used for no-key US ZIP code lookup.
-The National Weather Service alerts API is used for location-specific Weather News.
+The National Weather Service alerts API is used for location-specific Weather News where US alert coverage is available.
 Wikimedia's On This Day feed is used for Today in History cards.
+Local deterministic generators provide daily advice, Local Weather Trivia, Weather Word of the Day, Today's Horoscope, One Happy News Story, moon phase, and visual effects.
 
 Forecast endpoint fields:
 
@@ -51,7 +61,7 @@ The app keeps state in a single in-memory object:
 - `locationMode`: selected City or ZIP search mode.
 - `horoscopeSign`: selected zodiac sign for the daily horoscope panel.
 
-Persistent state is stored under legacy `weatherboard.*` keys in Local Storage so saved locations and preferences survive the VibeCast rename.
+Persistent state is stored under legacy `weatherboard.*` keys in Local Storage so saved locations and preferences survive the VibeCast rename. No state is sent to a VibeCast backend because there is no backend.
 
 ## Floating Cats
 
@@ -64,6 +74,10 @@ The decorative weather scene is a canvas rendered from the active weather code g
 ## Weather Overlay
 
 The full-page overlay is a fixed, click-through canvas at 10% opacity, making it 90% transparent. It mirrors the active forecast with rain streaks, snow, fog bands, storm flashes, or light drifting particles and switches to a still frame when reduced motion is enabled.
+
+## Advice Engine
+
+Today's Advice is generated from current, hourly, and daily forecast values. It checks precipitation risk for umbrella guidance, temperature and apparent temperature for clothing, humidity and wind for comfort, daylight and precipitation windows for dog park guidance, and UV, gusts, snow, storm, or heat signals for extra gear notes.
 
 ## Moon Phase
 
@@ -89,14 +103,19 @@ The happy story panel is generated from a local set of positive, evergreen story
 
 The history panel requests selected events from Wikimedia's On This Day REST feed using the forecast date. Events are rendered with `textContent`, and article links open in a new tab. A small local fallback covers the current launch date and a generic almanac message if the feed is unavailable.
 
+## Failure Handling
+
+Search, forecast, alert, and history failures are caught and shown as status text or fallback cards instead of breaking the page. Weather News falls back to resource cards, Today in History falls back to local entries, and generated daily extras continue to render from any successfully loaded forecast.
+
 ## Offline Behavior
 
-The service worker caches static app assets after the first successful load. Forecast, alert, and history API responses are not cached, so live weather and fresh history events still need network access.
+The service worker caches static app assets after the first successful load. Forecast, alert, and history API responses are not cached, so live weather, alerts, and fresh history events still need network access. When shipped assets change, update `CACHE_NAME` in `sw.js` so browsers pick up the new static files.
 
 ## Accessibility
 
 - Controls use semantic buttons, labels, and fieldsets.
 - Status changes are announced through an `aria-live` region.
-- The decorative weather scene is hidden from assistive technology.
+- Decorative weather canvases and floating cats are hidden from assistive technology.
 - The trend canvas has an accessible label and the same data is also available in the hourly cards.
 - Focus styles are visible and keyboard friendly.
+- Motion-heavy effects respect `prefers-reduced-motion`.

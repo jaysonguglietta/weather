@@ -1,28 +1,25 @@
 # VibeCast
 
-VibeCast is a responsive, installable browser weather app with live forecasts, practical daily advice, playful animations, and a few daily extras. It uses free browser-friendly APIs, so it does not need an API key or server-side proxy.
+VibeCast is a responsive, installable browser weather app with live forecasts, practical daily advice, playful animations, and a stack of daily extras. It uses free browser-friendly APIs, so it does not need an API key, account, paid service, or server-side proxy.
 
-## Features
+## Highlights
 
-- Current conditions with temperature, feels-like temperature, humidity, wind, pressure, cloud cover, UV index, sunrise, sunset, and moon phase.
-- City search through Open-Meteo geocoding.
-- Dedicated US ZIP code entry through Zippopotam.us.
-- Browser geolocation support.
-- Next-12-hours trend chart and compact hourly forecast cards.
-- Daily advice for umbrella, outfit, comfort, dog park conditions, and weather-specific gear.
-- Local Weather Trivia cards for daylight, temperature swing, humidity, wind direction, and precipitation odds.
-- Weather Word of the Day with a local glossary term tied to the current forecast pattern.
-- Today's Horoscope with a saved zodiac sign and forecast-aware daily reading.
-- One Happy News Story with a local daily bright-side dispatch tied to the current forecast.
-- Today in History cards from Wikimedia's On This Day feed with a local fallback.
-- Weather News section with location-specific National Weather Service alerts and weather-resource links.
-- Seven-day forecast with high and low temperature ranges.
-- Animated weather scene with falling rain, snow, fog drift, storm flashes, and wind-blown leaves.
-- Whole-page weather overlay that mirrors current conditions at 90% transparency.
-- Saved locations stored locally in the browser.
-- Optional floating cat heads that bounce around the screen.
-- Static PWA assets cached by a service worker.
-- No build step, framework, backend, or paid API required.
+- Forecast basics: current conditions, next-12-hour trend chart, hourly cards, and seven-day forecast.
+- Location options: city search, dedicated US ZIP code entry, browser geolocation, and saved locations.
+- Daily details: humidity, wind, pressure, cloud cover, UV index, sunrise, sunset, moon phase, and precipitation.
+- Practical guidance: umbrella, outfit, comfort, dog park, and weather gear recommendations.
+- Daily extras: Local Weather Trivia, Weather Word of the Day, Today's Horoscope, One Happy News Story, and Today in History.
+- Weather News: National Weather Service alerts when available, plus fallback weather-resource cards.
+- Motion: animated forecast scene, rain/snow/fog/storm effects, wind-blown leaves, 90% transparent page weather overlay, and optional floating cat heads.
+- PWA support: installable manifest and service worker caching for static app assets.
+- Simple stack: static HTML, CSS, and JavaScript with no build step or framework.
+
+## Documentation
+
+- `docs/USER_GUIDE.md`: how to use each app section.
+- `docs/ARCHITECTURE.md`: runtime flow, data sources, state, rendering, and offline behavior.
+- `docs/DEVELOPMENT.md`: local setup, validation checklist, and maintenance notes.
+- `CHANGELOG.md`: versioned feature and documentation history.
 
 ## Run Locally
 
@@ -34,7 +31,7 @@ python3 -m http.server 8000
 
 Then visit `http://localhost:8000`.
 
-Serving over HTTP is recommended because service workers are not available from `file://` URLs.
+Serving over HTTP is recommended because service workers are not available from `file://` URLs. Any available local port works, for example `python3 -m http.server 8003` if your preview is already pointed at `http://127.0.0.1:8003/`.
 
 ## Deployment
 
@@ -56,14 +53,20 @@ VibeCast calls:
 - `https://geocoding-api.open-meteo.com/v1/reverse`
 - `https://api.open-meteo.com/v1/forecast`
 - `https://api.zippopotam.us/us/{zip}`
-- `https://api.weather.gov/alerts/active?point={lat},{lon}`
+- `https://api.weather.gov/alerts/active?point={lat},{lon}` for US alert coverage
 - `https://en.wikipedia.org/api/rest_v1/feed/onthisday/selected/{MM}/{DD}`
+
+Trivia, word of the day, horoscope, happy news, advice, moon phase, and visual effects are generated locally in the browser from the loaded forecast.
+
+## Data And Privacy
+
+VibeCast does not have accounts, analytics, or a backend. Saved locations, units, city/ZIP mode, horoscope sign, and cat preference stay in the current browser's Local Storage under legacy `weatherboard.*` keys so existing users keep their preferences after the VibeCast rename. Weather APIs receive the search text or coordinates needed to return a forecast.
 
 See `docs/ARCHITECTURE.md` for implementation details.
 
 ## Browser Support
 
-VibeCast uses modern browser APIs: Fetch, Canvas, Local Storage, Service Workers, and Geolocation. The core forecast works in current Chrome, Edge, Firefox, and Safari. Geolocation depends on browser permission and local device support.
+VibeCast uses modern browser APIs: Fetch, Canvas, Local Storage, Service Workers, and Geolocation. The core forecast works in current Chrome, Edge, Firefox, and Safari. Geolocation depends on browser permission and local device support. Motion-heavy effects respect reduced-motion preferences.
 
 ## License
 
