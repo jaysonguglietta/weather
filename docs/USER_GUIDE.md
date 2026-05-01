@@ -14,7 +14,7 @@ Weather News shows current National Weather Service alerts for the selected loca
 
 ## Today's Advice
 
-Today's Advice recommends whether to bring an umbrella, what kind of clothing to wear, and any comfort or gear notes based on the selected location's forecast.
+Today's Advice recommends whether to bring an umbrella, what kind of clothing to wear, whether it is a good dog park day, and any comfort or gear notes based on the selected location's forecast. The dog park recommendation includes sunrise, sunset, and humidity.
 
 ## Change Units
 

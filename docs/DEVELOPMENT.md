@@ -29,7 +29,7 @@ Then load the app in a browser and confirm:
 - The default forecast loads.
 - A city or ZIP search loads a new forecast.
 - ZIP mode accepts a 5-digit US ZIP code and loads a forecast.
-- Today's Advice updates after each forecast load and after unit changes.
+- Today's Advice updates after each forecast load and after unit changes, including the dog park recommendation.
 - Weather News loads National Weather Service alerts or shows fallback resource cards.
 - Unit switching refetches values.
 - Saving and removing locations works.

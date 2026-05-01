@@ -9,7 +9,7 @@ WeatherBoard is a responsive, installable browser weather app. It uses the free 
 - Dedicated US ZIP code entry through Zippopotam.us.
 - Browser geolocation support.
 - Next-12-hours trend chart and compact hourly forecast cards.
-- Daily advice for umbrella, outfit, comfort, and weather-specific gear.
+- Daily advice for umbrella, outfit, comfort, dog park conditions, and weather-specific gear.
 - Weather News section with location-specific National Weather Service alerts and weather-resource links.
 - Seven-day forecast with high and low temperature ranges.
 - Saved locations stored locally in the browser.

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.0
+
+- Added dog park recommendations with sunrise, sunset, and humidity context.
+
 ## 1.4.0
 
 - Added daily umbrella, outfit, comfort, and weather gear recommendations.

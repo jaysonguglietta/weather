@@ -60,6 +60,8 @@ const elements = {
   currentTemp: document.querySelector("#currentTemp"),
   dailyList: document.querySelector("#dailyList"),
   dailySummary: document.querySelector("#dailySummary"),
+  dogParkDecision: document.querySelector("#dogParkDecision"),
+  dogParkReason: document.querySelector("#dogParkReason"),
   extraDecision: document.querySelector("#extraDecision"),
   extraReason: document.querySelector("#extraReason"),
   favoriteList: document.querySelector("#favoriteList"),
@@ -548,6 +550,8 @@ function renderDailyAdvice(current, daily, hours) {
   elements.outfitReason.textContent = advice.outfit.reason;
   elements.comfortDecision.textContent = advice.comfort.title;
   elements.comfortReason.textContent = advice.comfort.reason;
+  elements.dogParkDecision.textContent = advice.dogPark.title;
+  elements.dogParkReason.textContent = advice.dogPark.reason;
   elements.extraDecision.textContent = advice.extra.title;
   elements.extraReason.textContent = advice.extra.reason;
 }
@@ -574,9 +578,24 @@ function buildDailyAdvice(current, daily, hours) {
   const windMph = toMph(current.wind_speed_10m) || 0;
   const uv = Number(daily.uv_index_max[0] || 0);
   const humidity = Number(current.relative_humidity_2m || 0);
+  const sunrise = daily.sunrise[0];
+  const sunset = daily.sunset[0];
 
   return {
     comfort: buildComfortAdvice({ highF, humidity, maxPrecip, uv, windMph }),
+    dogPark: buildDogParkAdvice({
+      highF,
+      humidity,
+      lowF,
+      maxPrecip,
+      rainLikely,
+      snowLikely,
+      stormLikely,
+      sunrise,
+      sunset,
+      uv,
+      windMph
+    }),
     extra: buildExtraAdvice({ highF, lowF, maxPrecip, rainLikely, snowLikely, stormLikely, windMph }),
     outfit: buildOutfitAdvice({ apparentF, high, highF, low, lowF, snowLikely }),
     summary: `${summarizeUmbrella({ currentPrecip, maxPrecip, rainLikely, wetHours })} · ${formatTempText(low)}-${formatTempText(high)}`,
@@ -695,6 +714,64 @@ function buildComfortAdvice({ highF, humidity, maxPrecip, uv, windMph }) {
   return {
     reason: "No major comfort issues stand out in today's forecast.",
     title: "Comfortable"
+  };
+}
+
+function buildDogParkAdvice({ highF, humidity, lowF, maxPrecip, rainLikely, snowLikely, stormLikely, sunrise, sunset, uv, windMph }) {
+  const daylight = `Sunrise ${formatHour(sunrise)}, sunset ${formatHour(sunset)}, humidity ${formatNumber(humidity)}%.`;
+
+  if (stormLikely) {
+    return {
+      reason: `Skip the park if storms are nearby. ${daylight}`,
+      title: "Skip today"
+    };
+  }
+
+  if (highF >= 90 || (highF >= 85 && humidity >= 70)) {
+    return {
+      reason: `Too hot for hard play. Go near sunrise, keep it short, and bring water. ${daylight}`,
+      title: "Early only"
+    };
+  }
+
+  if (snowLikely || lowF <= 25) {
+    return {
+      reason: `Cold or snowy conditions may be rough on paws. Try a short walk instead. ${daylight}`,
+      title: "Short walk"
+    };
+  }
+
+  if (rainLikely || maxPrecip >= 50) {
+    return {
+      reason: `Likely wet or muddy, with rain chances near ${formatNumber(maxPrecip)}%. ${daylight}`,
+      title: "Maybe later"
+    };
+  }
+
+  if (windMph >= 25) {
+    return {
+      reason: `Wind around ${formatNumber(windMph)} mph could make the park uncomfortable. ${daylight}`,
+      title: "Not ideal"
+    };
+  }
+
+  if (uv >= 7 && highF >= 78) {
+    return {
+      reason: `Good weather, but avoid peak sun. Morning or evening is best. ${daylight}`,
+      title: "Go off-peak"
+    };
+  }
+
+  if (maxPrecip >= 25) {
+    return {
+      reason: `Looks usable, though there is a ${formatNumber(maxPrecip)}% shower chance. ${daylight}`,
+      title: "Good window"
+    };
+  }
+
+  return {
+    reason: `Comfortable conditions for park time. ${daylight}`,
+    title: "Good day"
   };
 }
 
