@@ -36,6 +36,10 @@ body {
   color: var(--ink);
 }
 
+body.cats-paused .cat-field {
+  display: none;
+}
+
 button,
 input {
   font: inherit;
@@ -81,6 +85,31 @@ svg {
   padding: 1rem 0;
 }
 
+.cat-field {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.cat-head {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--cat-size, 68px);
+  height: var(--cat-size, 68px);
+  filter: drop-shadow(0 12px 14px rgba(25, 35, 34, 0.2));
+  opacity: 0.92;
+  transform: translate3d(-120px, -120px, 0);
+  will-change: transform;
+}
+
+.cat-head svg {
+  width: 100%;
+  height: 100%;
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -104,6 +133,38 @@ svg {
   font-size: 0.78rem;
   font-weight: 800;
   text-transform: uppercase;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}
+
+.cat-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--ink);
+  padding: 0 0.75rem;
+  font-weight: 900;
+}
+
+.cat-toggle svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.cat-toggle[aria-pressed="true"] {
+  border-color: rgba(216, 100, 69, 0.45);
+  background: #fff0e8;
+  color: #913e2a;
 }
 
 .unit-switch {
@@ -605,6 +666,16 @@ button:focus-visible,
     flex-direction: column;
   }
 
+  .header-controls {
+    align-items: stretch;
+    display: grid;
+    grid-template-columns: minmax(6rem, 0.45fr) minmax(0, 1fr);
+  }
+
+  .cat-toggle {
+    min-width: 0;
+  }
+
   .unit-switch {
     width: 100%;
     grid-template-columns: repeat(2, 1fr);
@@ -652,5 +723,9 @@ button:focus-visible,
   *::before,
   *::after {
     scroll-behavior: auto !important;
+  }
+
+  .cat-field {
+    display: none;
   }
 }

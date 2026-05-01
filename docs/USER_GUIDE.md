@@ -16,6 +16,10 @@ Use the `F` and `C` segmented control in the header. WeatherBoard refetches the 
 
 After a forecast loads, use the star button beside the location action. Saved locations appear in the sidebar and are stored in the current browser.
 
+## Floating Cats
+
+Use the `Cats` button in the header to pause or resume the bouncing cat heads. WeatherBoard automatically pauses them when reduced motion is enabled in the operating system or browser.
+
 ## Clear Saved Locations
 
 Use `Clear` in the saved section. This only removes saved locations from the current browser.

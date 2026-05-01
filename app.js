@@ -30,12 +30,23 @@ const WEATHER_CODES = {
 };
 
 const STORAGE_KEYS = {
+  cats: "weatherboard.cats",
   units: "weatherboard.units",
   favorites: "weatherboard.favorites",
   lastLocation: "weatherboard.lastLocation"
 };
 
+const CAT_PALETTE = [
+  { base: "#f4b05f", blush: "#e87954", spot: "#ffffff", stripe: "#9b5b2f" },
+  { base: "#f6f1e8", blush: "#ee8f8f", spot: "#2f3638", stripe: "#9c9690" },
+  { base: "#2f3638", blush: "#f09595", spot: "#f6f1e8", stripe: "#5c6467" },
+  { base: "#9fc7c9", blush: "#d86445", spot: "#ffffff", stripe: "#137c7f" },
+  { base: "#d6a77a", blush: "#db765d", spot: "#fff8ea", stripe: "#7b5036" }
+];
+
 const elements = {
+  catField: document.querySelector("#catField"),
+  catToggle: document.querySelector("#catToggle"),
   clearFavoritesButton: document.querySelector("#clearFavoritesButton"),
   cloudCover: document.querySelector("#cloudCover"),
   currentCondition: document.querySelector("#currentCondition"),
@@ -68,11 +79,19 @@ const elements = {
 };
 
 const state = {
+  catsEnabled: localStorage.getItem(STORAGE_KEYS.cats) !== "off",
   favorites: readJson(STORAGE_KEYS.favorites, []),
   lastLocation: readJson(STORAGE_KEYS.lastLocation, null),
   location: null,
   units: localStorage.getItem(STORAGE_KEYS.units) || "imperial",
   weather: null
+};
+
+const catState = {
+  cats: [],
+  frame: null,
+  lastTime: 0,
+  motionQuery: window.matchMedia("(prefers-reduced-motion: reduce)")
 };
 
 function readJson(key, fallback) {
@@ -734,7 +753,143 @@ function handleGeolocation() {
   );
 }
 
+function createCatMarkup(palette, index) {
+  const eyeTilt = index % 2 === 0 ? "M28 44h.1M68 44h.1" : "M27 43l4 3M69 43l-4 3";
+  const mouth = index % 3 === 0 ? "M43 61c3 3 7 3 10 0" : "M43 59c2 5 8 5 10 0";
+  const whiskerLift = index % 2 === 0 ? 0 : 3;
+
+  return `
+    <svg viewBox="0 0 96 96" aria-hidden="true">
+      <path fill="${palette.base}" d="M14 13 34 26a37 37 0 0 1 28 0l20-13v30c3 5 5 11 5 18 0 18-17 31-39 31S9 79 9 61c0-7 2-13 5-18V13Z"/>
+      <path fill="${palette.spot}" d="M30 28c10-7 26-7 36 0-6 5-12 7-18 7s-12-2-18-7Z" opacity=".72"/>
+      <path fill="#ffd9d0" d="m20 27 10 7-11 7V27Zm56 0L66 34l11 7V27Z"/>
+      <path fill="${palette.stripe}" d="M43 18h10l-5 13-5-13Zm-20 1 9 6-8 5-1-11Zm50 0-1 11-8-5 9-6Z" opacity=".6"/>
+      <circle cx="30" cy="55" r="6" fill="${palette.blush}" opacity=".42"/>
+      <circle cx="66" cy="55" r="6" fill="${palette.blush}" opacity=".42"/>
+      <path d="${eyeTilt}" stroke="#172120" stroke-width="6" stroke-linecap="round"/>
+      <path d="M48 50 42 57h12l-6-7Z" fill="#172120"/>
+      <path d="${mouth}" fill="none" stroke="#172120" stroke-width="4" stroke-linecap="round"/>
+      <path d="M18 ${57 - whiskerLift}h18M17 ${66 - whiskerLift}l19-4M78 ${57 - whiskerLift}H60M79 ${66 - whiskerLift}l-19-4" stroke="#172120" stroke-width="3" stroke-linecap="round" opacity=".72"/>
+    </svg>
+  `;
+}
+
+function preferredCatCount() {
+  if (window.innerWidth < 680) {
+    return 4;
+  }
+
+  if (window.innerWidth < 1100) {
+    return 6;
+  }
+
+  return 8;
+}
+
+function createCats() {
+  elements.catField.replaceChildren();
+  catState.cats = [];
+
+  const count = preferredCatCount();
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+
+  for (let index = 0; index < count; index += 1) {
+    const node = document.createElement("div");
+    const size = 48 + Math.round(Math.random() * 34);
+    const palette = CAT_PALETTE[index % CAT_PALETTE.length];
+    node.className = "cat-head";
+    node.style.setProperty("--cat-size", `${size}px`);
+    node.innerHTML = createCatMarkup(palette, index);
+    elements.catField.append(node);
+
+    catState.cats.push({
+      node,
+      rotation: Math.random() * 360,
+      rotationSpeed: (Math.random() - 0.5) * 36,
+      size,
+      vx: (Math.random() > 0.5 ? 1 : -1) * (34 + Math.random() * 50),
+      vy: (Math.random() > 0.5 ? 1 : -1) * (28 + Math.random() * 46),
+      x: Math.random() * Math.max(width - size, 1),
+      y: Math.random() * Math.max(height - size, 1)
+    });
+  }
+}
+
+function animateCats(time = 0) {
+  if (!state.catsEnabled || catState.motionQuery.matches) {
+    return;
+  }
+
+  const elapsed = catState.lastTime ? Math.min((time - catState.lastTime) / 1000, 0.04) : 0;
+  catState.lastTime = time;
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+
+  catState.cats.forEach((cat) => {
+    cat.x += cat.vx * elapsed;
+    cat.y += cat.vy * elapsed;
+    cat.rotation += cat.rotationSpeed * elapsed;
+
+    if (cat.x <= 0 || cat.x + cat.size >= width) {
+      cat.vx *= -1;
+      cat.x = Math.max(0, Math.min(cat.x, width - cat.size));
+    }
+
+    if (cat.y <= 0 || cat.y + cat.size >= height) {
+      cat.vy *= -1;
+      cat.y = Math.max(0, Math.min(cat.y, height - cat.size));
+    }
+
+    cat.node.style.transform = `translate3d(${cat.x}px, ${cat.y}px, 0) rotate(${cat.rotation}deg)`;
+  });
+
+  catState.frame = requestAnimationFrame(animateCats);
+}
+
+function stopCats() {
+  if (catState.frame) {
+    cancelAnimationFrame(catState.frame);
+    catState.frame = null;
+  }
+
+  catState.lastTime = 0;
+}
+
+function updateCatToggle() {
+  const active = state.catsEnabled && !catState.motionQuery.matches;
+  document.body.classList.toggle("cats-paused", !active);
+  elements.catToggle.setAttribute("aria-pressed", String(active));
+  elements.catToggle.disabled = catState.motionQuery.matches;
+}
+
+function startCats() {
+  stopCats();
+  updateCatToggle();
+
+  if (!state.catsEnabled || catState.motionQuery.matches) {
+    return;
+  }
+
+  createCats();
+  catState.frame = requestAnimationFrame(animateCats);
+}
+
+function toggleCats() {
+  if (catState.motionQuery.matches) {
+    setStatus("Cat heads are paused by your reduced motion setting.");
+    updateCatToggle();
+    return;
+  }
+
+  state.catsEnabled = !state.catsEnabled;
+  localStorage.setItem(STORAGE_KEYS.cats, state.catsEnabled ? "on" : "off");
+  startCats();
+  setStatus(state.catsEnabled ? "Floating cat heads activated." : "Floating cat heads paused.");
+}
+
 function bindEvents() {
+  elements.catToggle.addEventListener("click", toggleCats);
   elements.searchForm.addEventListener("submit", handleSearch);
   elements.locationButton.addEventListener("click", handleGeolocation);
   elements.saveFavoriteButton.addEventListener("click", saveFavorite);
@@ -757,6 +912,10 @@ function bindEvents() {
   });
 
   window.addEventListener("resize", () => {
+    if (state.catsEnabled && !catState.motionQuery.matches) {
+      createCats();
+    }
+
     if (!state.weather) {
       drawWeatherScene("clear", true);
       return;
@@ -767,6 +926,8 @@ function bindEvents() {
     drawWeatherScene(meta.group, Boolean(current.is_day));
     drawTrendChart(getUpcomingHours(state.weather, 12));
   });
+
+  catState.motionQuery.addEventListener("change", startCats);
 }
 
 async function registerServiceWorker() {
@@ -785,6 +946,7 @@ function init() {
   bindEvents();
   renderFavorites();
   drawWeatherScene("clear", true);
+  startCats();
   registerServiceWorker();
 
   if (state.lastLocation) {

@@ -10,6 +10,7 @@ WeatherBoard is a responsive, installable browser weather app. It uses the free 
 - Next-12-hours trend chart and compact hourly forecast cards.
 - Seven-day forecast with high and low temperature ranges.
 - Saved locations stored locally in the browser.
+- Optional floating cat heads that bounce around the screen.
 - Static PWA assets cached by a service worker.
 - No build step, framework, backend, or paid API required.
 

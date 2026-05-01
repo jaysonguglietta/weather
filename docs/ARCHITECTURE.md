@@ -5,8 +5,8 @@ WeatherBoard is intentionally small: it is a static frontend app that talks dire
 ## File Map
 
 - `index.html`: semantic app shell, controls, forecast panels, and canvas elements.
-- `styles.css`: responsive layout, component styling, accessible focus states, and chart containers.
-- `app.js`: API calls, state management, rendering, canvas drawing, favorites, unit toggles, and service worker registration.
+- `styles.css`: responsive layout, component styling, accessible focus states, chart containers, and the floating cat layer.
+- `app.js`: API calls, state management, rendering, canvas drawing, favorites, unit toggles, floating cat animation, and service worker registration.
 - `sw.js`: static asset cache for repeat visits.
 - `manifest.webmanifest`: installable app metadata.
 - `assets/weather-mark.svg`: app icon and favicon.
@@ -39,8 +39,13 @@ The app keeps state in a single in-memory object:
 - `lastLocation`: last loaded normalized location.
 - `location`: current normalized location.
 - `weather`: last forecast response.
+- `catsEnabled`: floating cat animation preference.
 
 Persistent state is stored under `weatherboard.*` keys in Local Storage.
+
+## Floating Cats
+
+The floating cat heads are generated as inline SVG elements in `app.js` and animated with `requestAnimationFrame`. They are decorative, hidden from assistive technology, and click-through so they do not block forecast controls. The app disables the animation when the browser reports `prefers-reduced-motion: reduce`.
 
 ## Offline Behavior
 
