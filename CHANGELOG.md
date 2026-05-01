@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.0
+
+- Added daily umbrella, outfit, comfort, and weather gear recommendations.
+
 ## 1.3.0
 
 - Added a Weather News section with National Weather Service alerts and fallback weather-resource links.

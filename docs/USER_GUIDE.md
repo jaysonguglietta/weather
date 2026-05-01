@@ -12,6 +12,10 @@ Select `Use my location` and approve the browser permission request. If reverse 
 
 Weather News shows current National Weather Service alerts for the selected location. If there are no active alerts, it shows useful national weather resources.
 
+## Today's Advice
+
+Today's Advice recommends whether to bring an umbrella, what kind of clothing to wear, and any comfort or gear notes based on the selected location's forecast.
+
 ## Change Units
 
 Use the `F` and `C` segmented control in the header. WeatherBoard refetches the forecast using the selected unit system.

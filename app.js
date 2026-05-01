@@ -45,16 +45,23 @@ const CAT_PALETTE = [
   { base: "#d6a77a", blush: "#db765d", spot: "#fff8ea", stripe: "#7b5036" }
 ];
 
+const WET_WEATHER_GROUPS = new Set(["rain", "storm", "snow"]);
+
 const elements = {
+  adviceSummary: document.querySelector("#adviceSummary"),
   catField: document.querySelector("#catField"),
   catToggle: document.querySelector("#catToggle"),
   clearFavoritesButton: document.querySelector("#clearFavoritesButton"),
+  comfortDecision: document.querySelector("#comfortDecision"),
+  comfortReason: document.querySelector("#comfortReason"),
   cloudCover: document.querySelector("#cloudCover"),
   currentCondition: document.querySelector("#currentCondition"),
   currentHeading: document.querySelector("#currentHeading"),
   currentTemp: document.querySelector("#currentTemp"),
   dailyList: document.querySelector("#dailyList"),
   dailySummary: document.querySelector("#dailySummary"),
+  extraDecision: document.querySelector("#extraDecision"),
+  extraReason: document.querySelector("#extraReason"),
   favoriteList: document.querySelector("#favoriteList"),
   feelsLike: document.querySelector("#feelsLike"),
   gusts: document.querySelector("#gusts"),
@@ -66,6 +73,8 @@ const elements = {
   locationModeInputs: document.querySelectorAll("input[name='locationMode']"),
   newsList: document.querySelector("#newsList"),
   newsSummary: document.querySelector("#newsSummary"),
+  outfitDecision: document.querySelector("#outfitDecision"),
+  outfitReason: document.querySelector("#outfitReason"),
   precipitation: document.querySelector("#precipitation"),
   pressure: document.querySelector("#pressure"),
   saveFavoriteButton: document.querySelector("#saveFavoriteButton"),
@@ -76,6 +85,8 @@ const elements = {
   sunset: document.querySelector("#sunset"),
   timezoneLabel: document.querySelector("#timezoneLabel"),
   trendCanvas: document.querySelector("#trendCanvas"),
+  umbrellaDecision: document.querySelector("#umbrellaDecision"),
+  umbrellaReason: document.querySelector("#umbrellaReason"),
   unitInputs: document.querySelectorAll("input[name='units']"),
   updatedAt: document.querySelector("#updatedAt"),
   uvIndex: document.querySelector("#uvIndex"),
@@ -176,6 +187,30 @@ function formatTemp(value) {
   return `${Math.round(value)}&deg;${unitConfig().temperature}`;
 }
 
+function formatTempText(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return "--";
+  }
+
+  return `${Math.round(value)}°${unitConfig().temperature}`;
+}
+
+function toFahrenheit(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return null;
+  }
+
+  return state.units === "metric" ? (Number(value) * 9) / 5 + 32 : Number(value);
+}
+
+function toMph(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return null;
+  }
+
+  return state.units === "metric" ? Number(value) / 1.609 : Number(value);
+}
+
 function formatNumber(value, digits = 0) {
   if (value === null || value === undefined || Number.isNaN(Number(value))) {
     return "--";
@@ -226,6 +261,10 @@ function compassDirection(degrees) {
 
   const directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
   return directions[Math.round(Number(degrees) / 45) % directions.length];
+}
+
+function weatherGroup(code) {
+  return (WEATHER_CODES[code] && WEATHER_CODES[code].group) || "cloud";
 }
 
 async function fetchJson(url) {
@@ -421,6 +460,7 @@ function renderWeather() {
   elements.uvIndex.textContent = formatNumber(weather.daily.uv_index_max[0], 1);
 
   const hours = getUpcomingHours(weather, 12);
+  renderDailyAdvice(current, weather.daily, hours);
   renderHourly(hours);
   renderDaily(weather.daily);
   drawWeatherScene(codeMeta.group, Boolean(current.is_day));
@@ -497,6 +537,214 @@ function renderDaily(daily) {
   });
 
   elements.dailyList.replaceChildren(...rows);
+}
+
+function renderDailyAdvice(current, daily, hours) {
+  const advice = buildDailyAdvice(current, daily, hours);
+  elements.adviceSummary.textContent = advice.summary;
+  elements.umbrellaDecision.textContent = advice.umbrella.title;
+  elements.umbrellaReason.textContent = advice.umbrella.reason;
+  elements.outfitDecision.textContent = advice.outfit.title;
+  elements.outfitReason.textContent = advice.outfit.reason;
+  elements.comfortDecision.textContent = advice.comfort.title;
+  elements.comfortReason.textContent = advice.comfort.reason;
+  elements.extraDecision.textContent = advice.extra.title;
+  elements.extraReason.textContent = advice.extra.reason;
+}
+
+function buildDailyAdvice(current, daily, hours) {
+  const currentGroup = weatherGroup(current.weather_code);
+  const dailyGroup = weatherGroup(daily.weather_code[0]);
+  const hourGroups = hours.map((hour) => weatherGroup(hour.code));
+  const wetHours = hourGroups.some((group) => WET_WEATHER_GROUPS.has(group));
+  const stormLikely = [currentGroup, dailyGroup, ...hourGroups].includes("storm");
+  const snowLikely = [currentGroup, dailyGroup, ...hourGroups].includes("snow");
+  const rainLikely = [currentGroup, dailyGroup, ...hourGroups].includes("rain") || stormLikely;
+  const maxPrecip = Math.max(
+    daily.precipitation_probability_max[0] || 0,
+    ...hours.map((hour) => hour.precipitation || 0)
+  );
+  const currentPrecip = Number(current.precipitation || 0);
+  const high = daily.temperature_2m_max[0];
+  const low = daily.temperature_2m_min[0];
+  const apparent = current.apparent_temperature ?? current.temperature_2m;
+  const apparentF = toFahrenheit(apparent);
+  const highF = toFahrenheit(high);
+  const lowF = toFahrenheit(low);
+  const windMph = toMph(current.wind_speed_10m) || 0;
+  const uv = Number(daily.uv_index_max[0] || 0);
+  const humidity = Number(current.relative_humidity_2m || 0);
+
+  return {
+    comfort: buildComfortAdvice({ highF, humidity, maxPrecip, uv, windMph }),
+    extra: buildExtraAdvice({ highF, lowF, maxPrecip, rainLikely, snowLikely, stormLikely, windMph }),
+    outfit: buildOutfitAdvice({ apparentF, high, highF, low, lowF, snowLikely }),
+    summary: `${summarizeUmbrella({ currentPrecip, maxPrecip, rainLikely, wetHours })} · ${formatTempText(low)}-${formatTempText(high)}`,
+    umbrella: buildUmbrellaAdvice({ currentPrecip, maxPrecip, rainLikely, snowLikely, wetHours })
+  };
+}
+
+function summarizeUmbrella({ currentPrecip, maxPrecip, rainLikely, wetHours }) {
+  if (currentPrecip > 0 || maxPrecip >= 50 || rainLikely || wetHours) {
+    return "Umbrella advised";
+  }
+
+  if (maxPrecip >= 25) {
+    return "Umbrella optional";
+  }
+
+  return "No umbrella needed";
+}
+
+function buildUmbrellaAdvice({ currentPrecip, maxPrecip, rainLikely, snowLikely, wetHours }) {
+  if (currentPrecip > 0 || maxPrecip >= 50 || rainLikely || wetHours) {
+    return {
+      reason: snowLikely
+        ? `Wet weather is possible today, with precipitation chances up to ${formatNumber(maxPrecip)}%.`
+        : `Rain chances reach ${formatNumber(maxPrecip)}% today, so it is worth carrying one.`,
+      title: "Bring one"
+    };
+  }
+
+  if (maxPrecip >= 25) {
+    return {
+      reason: `Precipitation chances peak near ${formatNumber(maxPrecip)}%, so a compact umbrella is optional.`,
+      title: "Maybe"
+    };
+  }
+
+  return {
+    reason: `Only about ${formatNumber(maxPrecip)}% precipitation risk in the near forecast.`,
+    title: "Skip it"
+  };
+}
+
+function buildOutfitAdvice({ apparentF, high, highF, low, lowF, snowLikely }) {
+  const range = `Today's range is ${formatTempText(low)} to ${formatTempText(high)}.`;
+
+  if (snowLikely || apparentF <= 32 || lowF <= 28) {
+    return {
+      reason: `${range} Warm accessories and sturdy shoes make sense.`,
+      title: "Heavy coat"
+    };
+  }
+
+  if (apparentF <= 45 || lowF <= 40) {
+    return {
+      reason: `${range} Start with warm layers you can remove later.`,
+      title: "Jacket layers"
+    };
+  }
+
+  if (apparentF <= 60 || lowF <= 55) {
+    return {
+      reason: `${range} A light jacket or sweater should cover the cooler parts.`,
+      title: "Light jacket"
+    };
+  }
+
+  if (highF >= 85) {
+    return {
+      reason: `${range} Choose breathable fabric and keep water nearby.`,
+      title: "Light clothes"
+    };
+  }
+
+  if (highF >= 76) {
+    return {
+      reason: `${range} Short sleeves or light layers should feel comfortable.`,
+      title: "Easy layers"
+    };
+  }
+
+  return {
+    reason: `${range} Regular layers should work well.`,
+    title: "Everyday layers"
+  };
+}
+
+function buildComfortAdvice({ highF, humidity, maxPrecip, uv, windMph }) {
+  if (uv >= 6) {
+    return {
+      reason: `UV index peaks near ${formatNumber(uv, 1)}. Sunglasses and sunscreen are a good call.`,
+      title: "Sun protection"
+    };
+  }
+
+  if (windMph >= 20) {
+    return {
+      reason: `Winds are around ${formatNumber(windMph)} mph, so secure loose layers.`,
+      title: "Windy"
+    };
+  }
+
+  if (humidity >= 80 && highF >= 75) {
+    return {
+      reason: `Humidity is near ${formatNumber(humidity)}%, so breathable clothing will help.`,
+      title: "Humid"
+    };
+  }
+
+  if (maxPrecip >= 40) {
+    return {
+      reason: "Water-resistant shoes or a rain layer could keep the day easier.",
+      title: "Stay dry"
+    };
+  }
+
+  return {
+    reason: "No major comfort issues stand out in today's forecast.",
+    title: "Comfortable"
+  };
+}
+
+function buildExtraAdvice({ highF, lowF, maxPrecip, rainLikely, snowLikely, stormLikely, windMph }) {
+  if (stormLikely) {
+    return {
+      reason: "Check alerts before heading out and be ready to move indoors.",
+      title: "Storm risk"
+    };
+  }
+
+  if (snowLikely) {
+    return {
+      reason: "Allow extra travel time and choose shoes with traction.",
+      title: "Snow gear"
+    };
+  }
+
+  if (rainLikely || maxPrecip >= 50) {
+    return {
+      reason: "A rain jacket or water-resistant outer layer is worth it.",
+      title: "Rain layer"
+    };
+  }
+
+  if (highF >= 90) {
+    return {
+      reason: "Plan for shade, water, and lighter activity during the hottest part of the day.",
+      title: "Heat care"
+    };
+  }
+
+  if (lowF <= 32) {
+    return {
+      reason: "Morning and evening may feel cold enough for gloves or a hat.",
+      title: "Cold start"
+    };
+  }
+
+  if (windMph >= 15) {
+    return {
+      reason: "A layer that blocks wind may feel better than a loose sweater.",
+      title: "Wind layer"
+    };
+  }
+
+  return {
+    reason: "No big weather curveballs are showing for the day.",
+    title: "Easy day"
+  };
 }
 
 function renderNewsLoading(location) {
