@@ -167,9 +167,9 @@ svg {
   color: #913e2a;
 }
 
-.unit-switch {
+.unit-switch,
+.location-mode {
   display: grid;
-  grid-template-columns: repeat(2, 3rem);
   gap: 0.25rem;
   margin: 0;
   border: 1px solid var(--line);
@@ -178,20 +178,31 @@ svg {
   padding: 0.25rem;
 }
 
-.unit-switch label {
+.unit-switch {
+  grid-template-columns: repeat(2, 3rem);
+}
+
+.location-mode {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.unit-switch label,
+.location-mode label {
   position: relative;
   display: grid;
   min-height: 2.25rem;
   place-items: center;
 }
 
-.unit-switch input {
+.unit-switch input,
+.location-mode input {
   position: absolute;
   inset: 0;
   opacity: 0;
 }
 
-.unit-switch span {
+.unit-switch span,
+.location-mode span {
   display: grid;
   width: 100%;
   height: 100%;
@@ -201,7 +212,8 @@ svg {
   font-weight: 800;
 }
 
-.unit-switch input:checked + span {
+.unit-switch input:checked + span,
+.location-mode input:checked + span {
   background: var(--teal);
   color: white;
 }

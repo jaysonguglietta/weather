@@ -51,13 +51,23 @@
       <aside class="control-panel" aria-label="Location controls">
         <form class="search-form" id="searchForm">
           <label for="locationInput">Location</label>
+          <fieldset class="location-mode" aria-label="Location search type">
+            <label>
+              <input type="radio" name="locationMode" value="city" checked>
+              <span>City</span>
+            </label>
+            <label>
+              <input type="radio" name="locationMode" value="zip">
+              <span>ZIP</span>
+            </label>
+          </fieldset>
           <div class="search-row">
             <input
               id="locationInput"
               name="location"
               type="search"
               autocomplete="postal-code"
-              placeholder="City or ZIP"
+              placeholder="City, town, or ZIP"
               required
             >
             <button class="icon-button primary" type="submit" aria-label="Search location">
@@ -94,7 +104,7 @@
 
         <section class="compact-panel" aria-labelledby="sourceHeading">
           <h2 id="sourceHeading">Source</h2>
-          <p>Forecast data by Open-Meteo.</p>
+          <p>Forecast data by Open-Meteo. ZIP lookups by Zippopotam.us.</p>
         </section>
       </aside>
 

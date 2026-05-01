@@ -2,7 +2,7 @@
 
 ## Search
 
-Enter a city, town, or ZIP code and submit the search. WeatherBoard loads the first matching Open-Meteo geocoding result.
+Choose `City` or `ZIP`, enter the location, and submit the search. City searches use Open-Meteo geocoding. ZIP searches support US 5-digit ZIP codes and ZIP+4 formats.
 
 ## Use Current Location
 

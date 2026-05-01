@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0
+
+- Added an explicit City/ZIP selector and dedicated US ZIP code lookup.
+
 ## 1.1.0
 
 - Added optional bouncing floating cat heads with a header toggle and reduced-motion support.

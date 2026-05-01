@@ -15,14 +15,16 @@ WeatherBoard is intentionally small: it is a static frontend app that talks dire
 
 1. `app.js` initializes controls and loads the last saved location from `localStorage`.
 2. If no saved location exists, the app loads a default New York forecast.
-3. Searches call Open-Meteo geocoding and use the first matching result.
-4. Forecast data is fetched with current, hourly, and daily fields in the selected unit system.
-5. The current panel, hourly chart, seven-day list, and detail panel are rendered from the same forecast response.
-6. Favorites and unit preferences are stored in `localStorage`.
+3. City searches call Open-Meteo geocoding and use the first matching result.
+4. ZIP searches call Zippopotam.us to resolve a US ZIP code to coordinates.
+5. Forecast data is fetched with current, hourly, and daily fields in the selected unit system.
+6. The current panel, hourly chart, seven-day list, and detail panel are rendered from the same forecast response.
+7. Favorites and unit preferences are stored in `localStorage`.
 
 ## Data Sources
 
 Open-Meteo is used because it supports browser calls without an API key.
+Zippopotam.us is used for no-key US ZIP code lookup.
 
 Forecast endpoint fields:
 
@@ -40,6 +42,7 @@ The app keeps state in a single in-memory object:
 - `location`: current normalized location.
 - `weather`: last forecast response.
 - `catsEnabled`: floating cat animation preference.
+- `locationMode`: selected City or ZIP search mode.
 
 Persistent state is stored under `weatherboard.*` keys in Local Storage.
 

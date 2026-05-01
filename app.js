@@ -31,6 +31,7 @@ const WEATHER_CODES = {
 
 const STORAGE_KEYS = {
   cats: "weatherboard.cats",
+  locationMode: "weatherboard.locationMode",
   units: "weatherboard.units",
   favorites: "weatherboard.favorites",
   lastLocation: "weatherboard.lastLocation"
@@ -62,6 +63,7 @@ const elements = {
   humidity: document.querySelector("#humidity"),
   locationButton: document.querySelector("#locationButton"),
   locationInput: document.querySelector("#locationInput"),
+  locationModeInputs: document.querySelectorAll("input[name='locationMode']"),
   precipitation: document.querySelector("#precipitation"),
   pressure: document.querySelector("#pressure"),
   saveFavoriteButton: document.querySelector("#saveFavoriteButton"),
@@ -83,6 +85,7 @@ const state = {
   favorites: readJson(STORAGE_KEYS.favorites, []),
   lastLocation: readJson(STORAGE_KEYS.lastLocation, null),
   location: null,
+  locationMode: localStorage.getItem(STORAGE_KEYS.locationMode) || "city",
   units: localStorage.getItem(STORAGE_KEYS.units) || "imperial",
   weather: null
 };
@@ -139,14 +142,16 @@ function normalizeLocation(raw) {
   const name = raw.name || raw.city || "Current location";
   const admin = raw.admin1 || raw.admin2 || "";
   const country = raw.country_code || raw.country || "";
+  const zip = raw.zip || raw["post code"] || "";
 
   return {
-    id: `${name}-${admin}-${country}-${latitude.toFixed(3)}-${longitude.toFixed(3)}`,
+    id: `${name}-${admin}-${country}-${zip}-${latitude.toFixed(3)}-${longitude.toFixed(3)}`,
     name,
     admin,
     country,
     latitude,
-    longitude
+    longitude,
+    zip
   };
 }
 
@@ -155,7 +160,8 @@ function locationLabel(location) {
     return "Choose a location";
   }
 
-  const place = [location.name, location.admin].filter(Boolean).join(", ");
+  const region = [location.admin, location.zip].filter(Boolean).join(" ");
+  const place = [location.name, region].filter(Boolean).join(", ");
   return [place, location.country].filter(Boolean).join(" ");
 }
 
@@ -243,6 +249,42 @@ async function searchLocation(query) {
   }
 
   return results.map(normalizeLocation);
+}
+
+function normalizeZip(zip) {
+  const match = queryZipPattern().exec(zip.trim());
+  return match ? match[1] : "";
+}
+
+function queryZipPattern() {
+  return /^(\d{5})(?:-\d{4})?$/;
+}
+
+function isZipSearch(query) {
+  return queryZipPattern().test(query.trim());
+}
+
+async function searchZipCode(query) {
+  const zip = normalizeZip(query);
+  if (!zip) {
+    throw new Error("Enter a valid 5-digit US ZIP code.");
+  }
+
+  const data = await fetchJson(`https://api.zippopotam.us/us/${zip}`);
+  const place = data.places && data.places[0];
+
+  if (!place) {
+    throw new Error("No matching ZIP code found.");
+  }
+
+  return normalizeLocation({
+    admin1: place["state abbreviation"] || place.state,
+    country_code: data["country abbreviation"] || "US",
+    latitude: place.latitude,
+    longitude: place.longitude,
+    name: place["place name"],
+    zip: data["post code"] || zip
+  });
 }
 
 async function reverseGeocode(latitude, longitude) {
@@ -720,6 +762,11 @@ async function handleSearch(event) {
 
   setStatus("Searching...");
   try {
+    if (state.locationMode === "zip" || isZipSearch(query)) {
+      await loadWeather(await searchZipCode(query));
+      return;
+    }
+
     const matches = await searchLocation(query);
     await loadWeather(matches[0]);
   } catch (error) {
@@ -888,6 +935,22 @@ function toggleCats() {
   setStatus(state.catsEnabled ? "Floating cat heads activated." : "Floating cat heads paused.");
 }
 
+function updateLocationMode() {
+  const zipMode = state.locationMode === "zip";
+  elements.locationInput.placeholder = zipMode ? "Enter ZIP code" : "City, town, or ZIP";
+  elements.locationInput.inputMode = zipMode ? "numeric" : "search";
+  elements.locationInput.autocomplete = zipMode ? "postal-code" : "address-level2";
+  if (zipMode) {
+    elements.locationInput.pattern = "\\d{5}(-\\d{4})?";
+  } else {
+    elements.locationInput.removeAttribute("pattern");
+  }
+  elements.locationInput.setAttribute(
+    "aria-label",
+    zipMode ? "ZIP code" : "City, town, or ZIP"
+  );
+}
+
 function bindEvents() {
   elements.catToggle.addEventListener("click", toggleCats);
   elements.searchForm.addEventListener("submit", handleSearch);
@@ -908,6 +971,15 @@ function bindEvents() {
       if (state.location) {
         loadWeather(state.location);
       }
+    });
+  });
+
+  elements.locationModeInputs.forEach((input) => {
+    input.checked = input.value === state.locationMode;
+    input.addEventListener("change", () => {
+      state.locationMode = input.value;
+      localStorage.setItem(STORAGE_KEYS.locationMode, state.locationMode);
+      updateLocationMode();
     });
   });
 
@@ -944,6 +1016,7 @@ async function registerServiceWorker() {
 
 function init() {
   bindEvents();
+  updateLocationMode();
   renderFavorites();
   drawWeatherScene("clear", true);
   startCats();

@@ -5,7 +5,8 @@ WeatherBoard is a responsive, installable browser weather app. It uses the free 
 ## Features
 
 - Current conditions with temperature, feels-like temperature, humidity, wind, pressure, cloud cover, UV index, sunrise, and sunset.
-- City or ZIP search through Open-Meteo geocoding.
+- City search through Open-Meteo geocoding.
+- Dedicated US ZIP code entry through Zippopotam.us.
 - Browser geolocation support.
 - Next-12-hours trend chart and compact hourly forecast cards.
 - Seven-day forecast with high and low temperature ranges.
@@ -45,6 +46,7 @@ WeatherBoard calls:
 - `https://geocoding-api.open-meteo.com/v1/search`
 - `https://geocoding-api.open-meteo.com/v1/reverse`
 - `https://api.open-meteo.com/v1/forecast`
+- `https://api.zippopotam.us/us/{zip}`
 
 See `docs/ARCHITECTURE.md` for implementation details.
 
