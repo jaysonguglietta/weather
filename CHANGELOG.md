@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.0
+
+- Added Today's Horoscope with zodiac sign entry, saved sign preference, and forecast-aware daily readings.
+
 ## 1.10.0
 
 - Added daily moon phase with approximate illumination in the Today panel.

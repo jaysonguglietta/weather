@@ -31,6 +31,7 @@ const WEATHER_CODES = {
 
 const STORAGE_KEYS = {
   cats: "weatherboard.cats",
+  horoscopeSign: "weatherboard.horoscopeSign",
   locationMode: "weatherboard.locationMode",
   units: "weatherboard.units",
   favorites: "weatherboard.favorites",
@@ -148,6 +149,59 @@ const WEATHER_WORDS = [
   }
 ];
 
+const ZODIAC_SIGNS = [
+  { aliases: ["ram"], dates: "Mar 21-Apr 19", element: "Fire", name: "Aries", rhythm: "initiative" },
+  { aliases: ["bull"], dates: "Apr 20-May 20", element: "Earth", name: "Taurus", rhythm: "steadiness" },
+  { aliases: ["twins", "thetwins"], dates: "May 21-Jun 20", element: "Air", name: "Gemini", rhythm: "curiosity" },
+  { aliases: ["crab"], dates: "Jun 21-Jul 22", element: "Water", name: "Cancer", rhythm: "care" },
+  { aliases: ["lion"], dates: "Jul 23-Aug 22", element: "Fire", name: "Leo", rhythm: "confidence" },
+  { aliases: ["maiden"], dates: "Aug 23-Sep 22", element: "Earth", name: "Virgo", rhythm: "craft" },
+  { aliases: ["scales"], dates: "Sep 23-Oct 22", element: "Air", name: "Libra", rhythm: "balance" },
+  { aliases: ["scorpion"], dates: "Oct 23-Nov 21", element: "Water", name: "Scorpio", rhythm: "intensity" },
+  { aliases: ["archer"], dates: "Nov 22-Dec 21", element: "Fire", name: "Sagittarius", rhythm: "range" },
+  { aliases: ["goat", "seagoat", "sea goat"], dates: "Dec 22-Jan 19", element: "Earth", name: "Capricorn", rhythm: "discipline" },
+  { aliases: ["waterbearer", "water bearer"], dates: "Jan 20-Feb 18", element: "Air", name: "Aquarius", rhythm: "perspective" },
+  { aliases: ["fish", "fishes"], dates: "Feb 19-Mar 20", element: "Water", name: "Pisces", rhythm: "imagination" }
+];
+
+const HOROSCOPE_OPENERS = [
+  "A small pattern becomes easier to read today",
+  "Your best move is quieter than it first appears",
+  "A useful opening shows up through a simple adjustment",
+  "The day rewards a clean choice and a lighter grip",
+  "Something ordinary has more signal than noise today",
+  "A fresh angle arrives when you stop forcing the timing"
+];
+
+const HOROSCOPE_PROMPTS = [
+  "name the next step before you widen the plan",
+  "leave room for one helpful surprise",
+  "trust the detail that keeps returning to your attention",
+  "protect your pace and let the rest organize around it",
+  "turn one vague intention into a visible action",
+  "ask for the clarity you would usually try to guess"
+];
+
+const HOROSCOPE_MOODS = [
+  "clear-eyed",
+  "steady",
+  "sparked",
+  "reflective",
+  "social",
+  "restorative",
+  "decisive",
+  "inventive"
+];
+
+const HOROSCOPE_GROUP_NOTES = {
+  clear: "use the open sky as permission to choose plainly",
+  cloud: "let uncertainty become a filter instead of a wall",
+  fog: "move slowly enough for the real outline to appear",
+  rain: "stay flexible and let small delays soften the plan",
+  snow: "keep the day simple, warm, and deliberately paced",
+  storm: "protect your attention before reacting to every spark"
+};
+
 const elements = {
   adviceSummary: document.querySelector("#adviceSummary"),
   catField: document.querySelector("#catField"),
@@ -170,6 +224,14 @@ const elements = {
   gusts: document.querySelector("#gusts"),
   hourlyList: document.querySelector("#hourlyList"),
   hourlySummary: document.querySelector("#hourlySummary"),
+  horoscopeFocus: document.querySelector("#horoscopeFocus"),
+  horoscopeForm: document.querySelector("#horoscopeForm"),
+  horoscopeLabel: document.querySelector("#horoscopeLabel"),
+  horoscopeMood: document.querySelector("#horoscopeMood"),
+  horoscopeSign: document.querySelector("#horoscopeSign"),
+  horoscopeSummary: document.querySelector("#horoscopeSummary"),
+  horoscopeText: document.querySelector("#horoscopeText"),
+  horoscopeWeather: document.querySelector("#horoscopeWeather"),
   humidity: document.querySelector("#humidity"),
   locationButton: document.querySelector("#locationButton"),
   locationInput: document.querySelector("#locationInput"),
@@ -184,6 +246,7 @@ const elements = {
   saveFavoriteButton: document.querySelector("#saveFavoriteButton"),
   sceneCanvas: document.querySelector("#sceneCanvas"),
   searchForm: document.querySelector("#searchForm"),
+  signInput: document.querySelector("#signInput"),
   statusLine: document.querySelector("#statusLine"),
   sunrise: document.querySelector("#sunrise"),
   sunset: document.querySelector("#sunset"),
@@ -209,6 +272,7 @@ const elements = {
 const state = {
   catsEnabled: localStorage.getItem(STORAGE_KEYS.cats) !== "off",
   favorites: readJson(STORAGE_KEYS.favorites, []),
+  horoscopeSign: localStorage.getItem(STORAGE_KEYS.horoscopeSign) || "",
   lastLocation: readJson(STORAGE_KEYS.lastLocation, null),
   location: null,
   locationMode: localStorage.getItem(STORAGE_KEYS.locationMode) || "city",
@@ -715,6 +779,7 @@ function renderWeather() {
   renderDailyAdvice(current, weather.daily, hours);
   renderWeatherTrivia(current, weather.daily, hours);
   renderWeatherWord(current, weather.daily, hours);
+  renderHoroscope(current, weather.daily, hours);
   renderHourly(hours);
   renderDaily(weather.daily);
   drawWeatherScene(codeMeta.group, Boolean(current.is_day), current.wind_speed_10m);
@@ -949,6 +1014,94 @@ function buildWeatherWordContext(word, current, daily, hours, location) {
   };
 
   return `${groupNotes[group] || `Today's forecast for ${place} gives you a fresh weather pattern to read.`} ${word.term} helps explain one piece of that setup.`;
+}
+
+function cleanSignName(value) {
+  return String(value || "").toLowerCase().replace(/[^a-z]/g, "");
+}
+
+function normalizeZodiacSign(value) {
+  const cleaned = cleanSignName(value);
+  if (!cleaned) {
+    return null;
+  }
+
+  return ZODIAC_SIGNS.find((sign) => (
+    cleanSignName(sign.name) === cleaned
+    || sign.aliases.some((alias) => cleanSignName(alias) === cleaned)
+  )) || null;
+}
+
+function renderHoroscope(current = null, daily = null, hours = []) {
+  const sign = normalizeZodiacSign(state.horoscopeSign);
+  if (!sign) {
+    elements.horoscopeSummary.textContent = "Choose sign";
+    elements.horoscopeLabel.textContent = "Ready";
+    elements.horoscopeSign.textContent = "Enter your sign";
+    elements.horoscopeText.textContent = "Your daily horoscope will appear here.";
+    elements.horoscopeFocus.textContent = "Theme: --";
+    elements.horoscopeMood.textContent = "Mood: --";
+    elements.horoscopeWeather.textContent = "Weather cue: --";
+    return;
+  }
+
+  elements.signInput.value = sign.name;
+
+  const weather = state.weather;
+  const activeCurrent = current || (weather && weather.current) || null;
+  const activeDaily = daily || (weather && weather.daily) || null;
+  const activeHours = hours.length ? hours : (weather ? getUpcomingHours(weather, 12) : []);
+  const date = activeDaily && activeDaily.time ? activeDaily.time[0] : new Date().toISOString().split("T")[0];
+  const horoscope = buildHoroscope(sign, date, activeCurrent, activeDaily, activeHours, state.location);
+
+  elements.horoscopeSummary.textContent = horoscope.summary;
+  elements.horoscopeLabel.textContent = horoscope.label;
+  elements.horoscopeSign.textContent = horoscope.sign;
+  elements.horoscopeText.textContent = horoscope.text;
+  elements.horoscopeFocus.textContent = `Theme: ${horoscope.focus}`;
+  elements.horoscopeMood.textContent = `Mood: ${horoscope.mood}`;
+  elements.horoscopeWeather.textContent = `Weather cue: ${horoscope.weatherCue}`;
+}
+
+function buildHoroscope(sign, date, current, daily, hours, location) {
+  const group = current ? weatherGroup(current.weather_code) : "clear";
+  const meta = current && WEATHER_CODES[current.weather_code]
+    ? WEATHER_CODES[current.weather_code]
+    : { label: "today's forecast" };
+  const moon = calculateMoonPhase(date);
+  const seed = Math.abs(hashString(`${date}-${sign.name}-${group}-${moon ? moon.name : "moon"}`));
+  const opener = HOROSCOPE_OPENERS[seed % HOROSCOPE_OPENERS.length];
+  const prompt = HOROSCOPE_PROMPTS[(seed + sign.name.length) % HOROSCOPE_PROMPTS.length];
+  const mood = HOROSCOPE_MOODS[(seed + sign.element.length) % HOROSCOPE_MOODS.length];
+  const groupNote = HOROSCOPE_GROUP_NOTES[group] || HOROSCOPE_GROUP_NOTES.cloud;
+  const place = location ? location.name : "your forecast";
+  const moonText = moon ? `${moon.name.toLowerCase()} light` : "today's lunar rhythm";
+  const weatherCue = buildHoroscopeWeatherCue({ current, daily, groupNote, hours, meta, place });
+
+  return {
+    focus: `${sign.rhythm}; ${prompt}.`,
+    label: `${sign.element} sign · ${sign.dates}`,
+    mood,
+    sign: sign.name,
+    summary: `${formatDay(date)} horoscope`,
+    text: `${sign.name}, ${opener.toLowerCase()}. With ${moonText} behind the scenes, your ${sign.rhythm} works best when you ${prompt}.`,
+    weatherCue
+  };
+}
+
+function buildHoroscopeWeatherCue({ current, daily, groupNote, hours, meta, place }) {
+  if (!current || !daily) {
+    return "Load a forecast to tune the reading to local weather.";
+  }
+
+  const high = daily.temperature_2m_max[0];
+  const low = daily.temperature_2m_min[0];
+  const maxPrecip = Math.max(
+    daily.precipitation_probability_max[0] || 0,
+    ...hours.map((hour) => hour.precipitation || 0)
+  );
+
+  return `${meta.label} in ${place}; ${groupNote}. ${formatTempText(low)}-${formatTempText(high)}, ${formatNumber(maxPrecip)}% peak rain chance.`;
 }
 
 function buildDailyAdvice(current, daily, hours) {
@@ -2104,6 +2257,21 @@ function removeFavorite(id) {
   renderFavorites();
 }
 
+function handleHoroscopeSubmit(event) {
+  event.preventDefault();
+  const sign = normalizeZodiacSign(elements.signInput.value);
+
+  if (!sign) {
+    setStatus("Choose a zodiac sign from Aries through Pisces.", "error");
+    return;
+  }
+
+  state.horoscopeSign = sign.name;
+  localStorage.setItem(STORAGE_KEYS.horoscopeSign, sign.name);
+  renderHoroscope();
+  setStatus(`Showing today's horoscope for ${sign.name}.`);
+}
+
 async function handleSearch(event) {
   event.preventDefault();
   const query = elements.locationInput.value.trim();
@@ -2322,6 +2490,7 @@ function updateLocationMode() {
 
 function bindEvents() {
   elements.catToggle.addEventListener("click", toggleCats);
+  elements.horoscopeForm.addEventListener("submit", handleHoroscopeSubmit);
   elements.searchForm.addEventListener("submit", handleSearch);
   elements.locationButton.addEventListener("click", handleGeolocation);
   elements.saveFavoriteButton.addEventListener("click", saveFavorite);
@@ -2382,6 +2551,7 @@ async function registerServiceWorker() {
 function init() {
   bindEvents();
   updateLocationMode();
+  renderHoroscope();
   renderFavorites();
   drawWeatherScene("clear", true, 0);
   drawWeatherOverlay("clear", true, 0);

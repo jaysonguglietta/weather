@@ -6,7 +6,7 @@ WeatherBoard is intentionally small: it is a static frontend app that talks dire
 
 - `index.html`: semantic app shell, controls, forecast panels, and canvas elements.
 - `styles.css`: responsive layout, component styling, accessible focus states, chart containers, and decorative animation layers.
-- `app.js`: API calls, state management, rendering, weather trivia, weather glossary terms, animated canvas drawing, whole-page weather overlay, favorites, unit toggles, floating cat animation, and service worker registration.
+- `app.js`: API calls, state management, rendering, weather trivia, weather glossary terms, horoscope generation, animated canvas drawing, whole-page weather overlay, favorites, unit toggles, floating cat animation, and service worker registration.
 - `sw.js`: static asset cache for repeat visits.
 - `manifest.webmanifest`: installable app metadata.
 - `assets/weather-mark.svg`: app icon and favicon.
@@ -19,9 +19,9 @@ WeatherBoard is intentionally small: it is a static frontend app that talks dire
 4. ZIP searches call Zippopotam.us to resolve a US ZIP code to coordinates.
 5. Forecast data is fetched with current, hourly, and daily fields in the selected unit system.
 6. Weather News fetches active National Weather Service alerts for the selected coordinates.
-7. Daily advice, local weather trivia, moon phase, and the Weather Word of the Day are computed from current, hourly, and daily forecast values, including dog park guidance.
-8. The current panel, advice panel, trivia panel, word panel, animated scene, 90% transparent page overlay, hourly chart, Weather News section, seven-day list, and detail panel are rendered from the response data.
-9. Favorites and unit preferences are stored in `localStorage`.
+7. Daily advice, local weather trivia, moon phase, horoscope text, and the Weather Word of the Day are computed from current, hourly, and daily forecast values, including dog park guidance.
+8. The current panel, advice panel, trivia panel, word panel, horoscope panel, animated scene, 90% transparent page overlay, hourly chart, Weather News section, seven-day list, and detail panel are rendered from the response data.
+9. Favorites, selected zodiac sign, and unit preferences are stored in `localStorage`.
 
 ## Data Sources
 
@@ -47,6 +47,7 @@ The app keeps state in a single in-memory object:
 - `news`: last National Weather Service alert list.
 - `catsEnabled`: floating cat animation preference.
 - `locationMode`: selected City or ZIP search mode.
+- `horoscopeSign`: selected zodiac sign for the daily horoscope panel.
 
 Persistent state is stored under `weatherboard.*` keys in Local Storage.
 
@@ -73,6 +74,10 @@ The trivia panel is generated locally from the active forecast response. It summ
 ## Weather Word of the Day
 
 The word panel is generated from a local glossary. The selected term is deterministic for the forecast date, location, and active weather group, then paired with a short definition, example, and local forecast context.
+
+## Today's Horoscope
+
+The horoscope panel accepts zodiac sign names and common aliases, then saves the normalized sign locally. The daily reading is generated in the browser from the sign, forecast date, current weather group, and calculated moon phase; it does not call an external horoscope API.
 
 ## Offline Behavior
 

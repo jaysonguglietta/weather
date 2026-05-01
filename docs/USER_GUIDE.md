@@ -34,6 +34,10 @@ Local Weather Trivia shows quick facts for the selected forecast, including dayl
 
 Weather Word of the Day introduces one glossary term for the loaded forecast. It includes a plain-language definition, example, and a note that connects the word to the selected location's conditions.
 
+## Today's Horoscope
+
+Enter a zodiac sign and select `Show` to see a daily reading. WeatherBoard saves the sign in the current browser and tunes the reading to the loaded forecast and moon phase.
+
 ## Change Units
 
 Use the `F` and `C` segmented control in the header. WeatherBoard refetches the forecast using the selected unit system.

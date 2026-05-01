@@ -209,6 +209,56 @@
           </article>
         </section>
 
+        <section class="data-panel" aria-labelledby="horoscopeHeading">
+          <div class="section-heading">
+            <h2 id="horoscopeHeading">Today's Horoscope</h2>
+            <span id="horoscopeSummary">Choose sign</span>
+          </div>
+          <form class="horoscope-form" id="horoscopeForm">
+            <label for="signInput">Zodiac sign</label>
+            <div class="horoscope-row">
+              <input
+                id="signInput"
+                name="sign"
+                type="search"
+                list="zodiacSigns"
+                autocomplete="off"
+                placeholder="Aries, Taurus, Gemini..."
+                required
+              >
+              <button class="text-button" type="submit">Show</button>
+            </div>
+            <datalist id="zodiacSigns">
+              <option value="Aries"></option>
+              <option value="Taurus"></option>
+              <option value="Gemini"></option>
+              <option value="Cancer"></option>
+              <option value="Leo"></option>
+              <option value="Virgo"></option>
+              <option value="Libra"></option>
+              <option value="Scorpio"></option>
+              <option value="Sagittarius"></option>
+              <option value="Capricorn"></option>
+              <option value="Aquarius"></option>
+              <option value="Pisces"></option>
+            </datalist>
+          </form>
+          <article class="horoscope-card">
+            <div class="horoscope-title">
+              <span id="horoscopeLabel">Ready</span>
+              <strong id="horoscopeSign">Enter your sign</strong>
+            </div>
+            <div class="horoscope-copy">
+              <p id="horoscopeText">Your daily horoscope will appear here.</p>
+              <div class="horoscope-notes" aria-label="Horoscope details">
+                <p id="horoscopeFocus">Theme: --</p>
+                <p id="horoscopeMood">Mood: --</p>
+                <p id="horoscopeWeather">Weather cue: --</p>
+              </div>
+            </div>
+          </article>
+        </section>
+
         <section class="data-panel" aria-labelledby="hourlyHeading">
           <div class="section-heading">
             <h2 id="hourlyHeading">Next 12 hours</h2>

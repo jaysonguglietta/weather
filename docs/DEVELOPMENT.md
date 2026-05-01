@@ -33,6 +33,7 @@ Then load the app in a browser and confirm:
 - Moon phase renders in the Today panel with a phase name and illumination percentage.
 - Local Weather Trivia updates after each forecast load and unit change.
 - Weather Word of the Day renders a term, definition, example, and local forecast context.
+- Today's Horoscope accepts zodiac sign names, saves the selected sign, and updates after forecast changes.
 - Weather News loads National Weather Service alerts or shows fallback resource cards.
 - The weather scene animates for rain, snow, fog, storm, and leaf motion, and becomes still when reduced motion is active.
 - The 90% transparent page overlay mirrors the active weather group without blocking clicks.
