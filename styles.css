@@ -787,6 +787,53 @@ button:focus-visible,
   padding-top: 0.65rem;
 }
 
+.history-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.history-card {
+  display: grid;
+  align-content: start;
+  gap: 0.55rem;
+  min-height: 12rem;
+  border: 1px solid rgba(55, 119, 182, 0.22);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(238, 246, 242, 0.72)),
+    white;
+  padding: 0.85rem;
+}
+
+.history-card span {
+  color: var(--blue);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.history-card strong {
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.history-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.42;
+}
+
+.history-card a {
+  align-self: end;
+  color: var(--teal-dark);
+  font-size: 0.9rem;
+  font-weight: 900;
+  text-decoration: none;
+}
+
 .hourly-list {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -998,6 +1045,7 @@ button:focus-visible,
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .history-list,
   .news-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1073,6 +1121,7 @@ button:focus-visible,
     width: 100%;
   }
 
+  .history-list,
   .news-list {
     grid-template-columns: 1fr;
   }

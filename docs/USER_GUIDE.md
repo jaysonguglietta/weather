@@ -42,6 +42,10 @@ Enter a zodiac sign and select `Show` to see a daily reading. WeatherBoard saves
 
 One Happy News Story shows a daily positive story from WeatherBoard's local bright-side set. It changes with the day and selected forecast, and includes a weather tie-in for the loaded location.
 
+## Today in History
+
+Today in History shows selected historical events for the forecast date. It uses Wikimedia's On This Day feed when available and falls back to a local almanac entry if the feed cannot load.
+
 ## Change Units
 
 Use the `F` and `C` segmented control in the header. WeatherBoard refetches the forecast using the selected unit system.

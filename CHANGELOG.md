@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.13.0
+
+- Added Today in History with Wikimedia On This Day events and a local fallback.
+
 ## 1.12.0
 
 - Added One Happy News Story with a local daily bright-side dispatch and forecast-aware weather tie-in.

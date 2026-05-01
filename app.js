@@ -235,6 +235,34 @@ const HAPPY_NEWS_STORIES = [
   }
 ];
 
+const HISTORY_FALLBACK_EVENTS = {
+  "05-01": [
+    {
+      text: "The Empire State Building officially opened in New York City.",
+      url: "https://en.wikipedia.org/wiki/Empire_State_Building",
+      year: 1931
+    },
+    {
+      text: "The Acts of Union took effect, joining England and Scotland into the Kingdom of Great Britain.",
+      url: "https://en.wikipedia.org/wiki/Acts_of_Union_1707",
+      year: 1707
+    },
+    {
+      text: "The Penny Black, the world's first adhesive postage stamp for public use, went on sale in Great Britain.",
+      url: "https://en.wikipedia.org/wiki/Penny_Black",
+      year: 1840
+    }
+  ]
+};
+
+const DEFAULT_HISTORY_EVENTS = [
+  {
+    text: "History changes with the date. When the live history feed is unavailable, WeatherBoard keeps this space ready for the next almanac note.",
+    url: "https://en.wikipedia.org/wiki/On_This_Day",
+    year: "Today"
+  }
+];
+
 const elements = {
   adviceSummary: document.querySelector("#adviceSummary"),
   catField: document.querySelector("#catField"),
@@ -260,6 +288,8 @@ const elements = {
   happyNewsSummary: document.querySelector("#happyNewsSummary"),
   happyNewsTitle: document.querySelector("#happyNewsTitle"),
   happyNewsWeather: document.querySelector("#happyNewsWeather"),
+  historyList: document.querySelector("#historyList"),
+  historySummary: document.querySelector("#historySummary"),
   hourlyList: document.querySelector("#hourlyList"),
   hourlySummary: document.querySelector("#hourlySummary"),
   horoscopeFocus: document.querySelector("#horoscopeFocus"),
@@ -310,6 +340,7 @@ const elements = {
 const state = {
   catsEnabled: localStorage.getItem(STORAGE_KEYS.cats) !== "off",
   favorites: readJson(STORAGE_KEYS.favorites, []),
+  historyDate: "",
   horoscopeSign: localStorage.getItem(STORAGE_KEYS.horoscopeSign) || "",
   lastLocation: readJson(STORAGE_KEYS.lastLocation, null),
   location: null,
@@ -757,10 +788,17 @@ async function fetchWeatherNews(location) {
   return data.features || [];
 }
 
+async function fetchHistoryEvents(dateValue) {
+  const { day, month } = historyDateParts(dateValue);
+  const data = await fetchJson(`https://en.wikipedia.org/api/rest_v1/feed/onthisday/selected/${month}/${day}`);
+  return data.selected || [];
+}
+
 async function loadWeather(location) {
   state.location = location;
   setStatus(`Loading ${locationLabel(location)}...`);
   renderNewsLoading(location);
+  renderHistoryLoading(new Date().toISOString().split("T")[0]);
   elements.saveFavoriteButton.disabled = true;
 
   try {
@@ -771,10 +809,12 @@ async function loadWeather(location) {
     renderWeather();
     setStatus(`Showing ${locationLabel(location)}.`);
     elements.saveFavoriteButton.disabled = false;
+    loadHistory(weather.daily.time[0]);
     loadWeatherNews(location);
   } catch (error) {
     console.error(error);
     setStatus("Forecast service is unavailable right now.", "error");
+    renderHistoryEvents(new Date().toISOString().split("T")[0], fallbackHistoryEvents(new Date().toISOString().split("T")[0]), "Local fallback");
     renderNewsError();
   }
 }
@@ -1199,6 +1239,114 @@ function happyNewsWeatherTieIn({ group, maxPrecip, place, temperature, wind }) {
   };
 
   return `${notes[group] || notes.cloud} Current air is ${formatTempText(temperature)} with wind near ${formatNumber(wind)} ${units.speed}.`;
+}
+
+function historyDateParts(dateValue) {
+  const [year, month, day] = String(dateValue || "").split("-").map(Number);
+  const fallback = new Date();
+
+  return {
+    day: String(day || fallback.getDate()).padStart(2, "0"),
+    key: `${String(month || fallback.getMonth() + 1).padStart(2, "0")}-${String(day || fallback.getDate()).padStart(2, "0")}`,
+    month: String(month || fallback.getMonth() + 1).padStart(2, "0"),
+    year: year || fallback.getFullYear()
+  };
+}
+
+function renderHistoryLoading(dateValue) {
+  state.historyDate = dateValue;
+  elements.historySummary.textContent = `${formatDay(dateValue)} loading`;
+  elements.historyList.replaceChildren(createHistoryCard({
+    source: "Wikimedia",
+    text: "Looking up events that happened on this date.",
+    year: "Loading"
+  }));
+}
+
+async function loadHistory(dateValue) {
+  state.historyDate = dateValue;
+  renderHistoryLoading(dateValue);
+
+  try {
+    const events = normalizeHistoryEvents(await fetchHistoryEvents(dateValue));
+    if (state.historyDate !== dateValue) {
+      return;
+    }
+
+    if (!events.length) {
+      throw new Error("No history events returned.");
+    }
+
+    renderHistoryEvents(dateValue, events, "Wikimedia");
+  } catch (error) {
+    console.info("Today in History unavailable.", error);
+    if (state.historyDate === dateValue) {
+      renderHistoryEvents(dateValue, fallbackHistoryEvents(dateValue), "Local fallback");
+    }
+  }
+}
+
+function normalizeHistoryEvents(events) {
+  return events
+    .map((event) => {
+      const page = (event.pages || []).find((item) => item.content_urls && item.content_urls.desktop)
+        || (event.pages || [])[0]
+        || null;
+      const title = page && (
+        (page.titles && page.titles.normalized)
+        || page.normalizedtitle
+        || page.title
+      );
+      const url = page && page.content_urls && page.content_urls.desktop
+        ? page.content_urls.desktop.page
+        : null;
+
+      return {
+        source: title || "Wikipedia",
+        text: event.text,
+        url,
+        year: event.year
+      };
+    })
+    .filter((event) => event.text && event.year !== undefined)
+    .slice(0, 3);
+}
+
+function fallbackHistoryEvents(dateValue) {
+  const { key } = historyDateParts(dateValue);
+  return HISTORY_FALLBACK_EVENTS[key] || DEFAULT_HISTORY_EVENTS;
+}
+
+function renderHistoryEvents(dateValue, events, source) {
+  elements.historySummary.textContent = `${formatDay(dateValue)} · ${source}`;
+  elements.historyList.replaceChildren(...events.map(createHistoryCard));
+}
+
+function createHistoryCard(event) {
+  const card = document.createElement("article");
+  card.className = "history-card";
+
+  const year = document.createElement("span");
+  year.textContent = String(event.year || "History");
+
+  const title = document.createElement("strong");
+  title.textContent = event.source || "On this date";
+
+  const body = document.createElement("p");
+  body.textContent = event.text || "A historical event for this date.";
+
+  card.append(year, title, body);
+
+  if (event.url) {
+    const link = document.createElement("a");
+    link.href = event.url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = "Read more";
+    card.append(link);
+  }
+
+  return card;
 }
 
 function buildDailyAdvice(current, daily, hours) {
@@ -2650,6 +2798,7 @@ function init() {
   updateLocationMode();
   renderHoroscope();
   renderHappyNews();
+  renderHistoryEvents(new Date().toISOString().split("T")[0], fallbackHistoryEvents(new Date().toISOString().split("T")[0]), "Ready");
   renderFavorites();
   drawWeatherScene("clear", true, 0);
   drawWeatherOverlay("clear", true, 0);

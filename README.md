@@ -14,6 +14,7 @@ WeatherBoard is a responsive, installable browser weather app. It uses the free 
 - Weather Word of the Day with a local glossary term tied to the current forecast pattern.
 - Today's Horoscope with a saved zodiac sign and forecast-aware daily reading.
 - One Happy News Story with a local daily bright-side dispatch tied to the current forecast.
+- Today in History cards from Wikimedia's On This Day feed with a local fallback.
 - Weather News section with location-specific National Weather Service alerts and weather-resource links.
 - Seven-day forecast with high and low temperature ranges.
 - Animated weather scene with falling rain, snow, fog drift, storm flashes, and wind-blown leaves.
@@ -56,6 +57,7 @@ WeatherBoard calls:
 - `https://api.open-meteo.com/v1/forecast`
 - `https://api.zippopotam.us/us/{zip}`
 - `https://api.weather.gov/alerts/active?point={lat},{lon}`
+- `https://en.wikipedia.org/api/rest_v1/feed/onthisday/selected/{MM}/{DD}`
 
 See `docs/ARCHITECTURE.md` for implementation details.
 

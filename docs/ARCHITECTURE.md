@@ -6,7 +6,7 @@ WeatherBoard is intentionally small: it is a static frontend app that talks dire
 
 - `index.html`: semantic app shell, controls, forecast panels, and canvas elements.
 - `styles.css`: responsive layout, component styling, accessible focus states, chart containers, and decorative animation layers.
-- `app.js`: API calls, state management, rendering, weather trivia, weather glossary terms, horoscope generation, happy story generation, animated canvas drawing, whole-page weather overlay, favorites, unit toggles, floating cat animation, and service worker registration.
+- `app.js`: API calls, state management, rendering, weather trivia, weather glossary terms, horoscope generation, happy story generation, Today in History rendering, animated canvas drawing, whole-page weather overlay, favorites, unit toggles, floating cat animation, and service worker registration.
 - `sw.js`: static asset cache for repeat visits.
 - `manifest.webmanifest`: installable app metadata.
 - `assets/weather-mark.svg`: app icon and favicon.
@@ -20,14 +20,16 @@ WeatherBoard is intentionally small: it is a static frontend app that talks dire
 5. Forecast data is fetched with current, hourly, and daily fields in the selected unit system.
 6. Weather News fetches active National Weather Service alerts for the selected coordinates.
 7. Daily advice, local weather trivia, moon phase, horoscope text, one happy story, and the Weather Word of the Day are computed from current, hourly, and daily forecast values, including dog park guidance.
-8. The current panel, advice panel, trivia panel, word panel, horoscope panel, happy story panel, animated scene, 90% transparent page overlay, hourly chart, Weather News section, seven-day list, and detail panel are rendered from the response data.
-9. Favorites, selected zodiac sign, and unit preferences are stored in `localStorage`.
+8. Today in History fetches Wikimedia On This Day events for the forecast date and falls back to local events if unavailable.
+9. The current panel, advice panel, trivia panel, word panel, horoscope panel, happy story panel, Today in History section, animated scene, 90% transparent page overlay, hourly chart, Weather News section, seven-day list, and detail panel are rendered from the response data.
+10. Favorites, selected zodiac sign, and unit preferences are stored in `localStorage`.
 
 ## Data Sources
 
 Open-Meteo is used because it supports browser calls without an API key.
 Zippopotam.us is used for no-key US ZIP code lookup.
 The National Weather Service alerts API is used for location-specific Weather News.
+Wikimedia's On This Day feed is used for Today in History cards.
 
 Forecast endpoint fields:
 
@@ -83,9 +85,13 @@ The horoscope panel accepts zodiac sign names and common aliases, then saves the
 
 The happy story panel is generated from a local set of positive, evergreen story prompts. The selected story is deterministic for the forecast date, location, and weather group, then paired with a short weather tie-in without calling another news API.
 
+## Today in History
+
+The history panel requests selected events from Wikimedia's On This Day REST feed using the forecast date. Events are rendered with `textContent`, and article links open in a new tab. A small local fallback covers the current launch date and a generic almanac message if the feed is unavailable.
+
 ## Offline Behavior
 
-The service worker caches static app assets after the first successful load. Forecast API responses are not cached, so live weather still needs network access.
+The service worker caches static app assets after the first successful load. Forecast, alert, and history API responses are not cached, so live weather and fresh history events still need network access.
 
 ## Accessibility
 
