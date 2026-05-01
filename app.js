@@ -257,7 +257,7 @@ const HISTORY_FALLBACK_EVENTS = {
 
 const DEFAULT_HISTORY_EVENTS = [
   {
-    text: "History changes with the date. When the live history feed is unavailable, WeatherBoard keeps this space ready for the next almanac note.",
+    text: "History changes with the date. When the live history feed is unavailable, VibeCast keeps this space ready for the next almanac note.",
     url: "https://en.wikipedia.org/wiki/On_This_Day",
     year: "Today"
   }
@@ -1186,7 +1186,7 @@ function buildHoroscopeWeatherCue({ current, daily, groupNote, hours, meta, plac
 function renderHappyNews(current = null, daily = null, hours = []) {
   if (!current || !daily) {
     elements.happyNewsSummary.textContent = "Daily bright side";
-    elements.happyNewsSource.textContent = "WeatherBoard Good News Desk";
+    elements.happyNewsSource.textContent = "VibeCast Good News Desk";
     elements.happyNewsTitle.textContent = "Choose a location";
     elements.happyNewsBody.textContent = "A cheerful daily story will appear after the forecast loads.";
     elements.happyNewsWeather.textContent = "Weather tie-in: --";
@@ -1214,7 +1214,7 @@ function buildHappyNewsStory(current, daily, hours, location) {
 
   return {
     body: `${story.body} ${story.action}`,
-    source: "WeatherBoard Good News Desk",
+    source: "VibeCast Good News Desk",
     summary: `${formatDay(date)} bright side`,
     title: story.title,
     weatherTieIn: happyNewsWeatherTieIn({

@@ -6,7 +6,7 @@ Choose `City` or `ZIP`, enter the location, and submit the search. City searches
 
 ## Use Current Location
 
-Select `Use my location` and approve the browser permission request. If reverse geocoding is unavailable, WeatherBoard still loads a forecast using the device coordinates.
+Select `Use my location` and approve the browser permission request. If reverse geocoding is unavailable, VibeCast still loads a forecast using the device coordinates.
 
 ## Weather News
 
@@ -36,11 +36,11 @@ Weather Word of the Day introduces one glossary term for the loaded forecast. It
 
 ## Today's Horoscope
 
-Enter a zodiac sign and select `Show` to see a daily reading. WeatherBoard saves the sign in the current browser and tunes the reading to the loaded forecast and moon phase.
+Enter a zodiac sign and select `Show` to see a daily reading. VibeCast saves the sign in the current browser and tunes the reading to the loaded forecast and moon phase.
 
 ## One Happy News Story
 
-One Happy News Story shows a daily positive story from WeatherBoard's local bright-side set. It changes with the day and selected forecast, and includes a weather tie-in for the loaded location.
+One Happy News Story shows a daily positive story from VibeCast's local bright-side set. It changes with the day and selected forecast, and includes a weather tie-in for the loaded location.
 
 ## Today in History
 
@@ -48,7 +48,7 @@ Today in History shows selected historical events for the forecast date. It uses
 
 ## Change Units
 
-Use the `F` and `C` segmented control in the header. WeatherBoard refetches the forecast using the selected unit system.
+Use the `F` and `C` segmented control in the header. VibeCast refetches the forecast using the selected unit system.
 
 ## Save Locations
 
@@ -56,7 +56,7 @@ After a forecast loads, use the star button beside the location action. Saved lo
 
 ## Floating Cats
 
-Use the `Cats` button in the header to pause or resume the bouncing cat heads. WeatherBoard automatically pauses them when reduced motion is enabled in the operating system or browser.
+Use the `Cats` button in the header to pause or resume the bouncing cat heads. VibeCast automatically pauses them when reduced motion is enabled in the operating system or browser.
 
 ## Clear Saved Locations
 
@@ -64,7 +64,7 @@ Use `Clear` in the saved section. This only removes saved locations from the cur
 
 ## Install
 
-Browsers that support Progressive Web Apps can install WeatherBoard after it is served over HTTP or HTTPS. The app manifest and service worker are included.
+Browsers that support Progressive Web Apps can install VibeCast after it is served over HTTP or HTTPS. The app manifest and service worker are included.
 
 ## Troubleshooting
 

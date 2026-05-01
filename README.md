@@ -1,6 +1,6 @@
-# WeatherBoard
+# VibeCast
 
-WeatherBoard is a responsive, installable browser weather app. It uses the free Open-Meteo APIs, so it does not need an API key or server-side proxy.
+VibeCast is a responsive, installable browser weather app with live forecasts, practical daily advice, playful animations, and a few daily extras. It uses free browser-friendly APIs, so it does not need an API key or server-side proxy.
 
 ## Features
 
@@ -50,7 +50,7 @@ For GitHub Pages:
 
 ## API
 
-WeatherBoard calls:
+VibeCast calls:
 
 - `https://geocoding-api.open-meteo.com/v1/search`
 - `https://geocoding-api.open-meteo.com/v1/reverse`
@@ -63,7 +63,7 @@ See `docs/ARCHITECTURE.md` for implementation details.
 
 ## Browser Support
 
-WeatherBoard uses modern browser APIs: Fetch, Canvas, Local Storage, Service Workers, and Geolocation. The core forecast works in current Chrome, Edge, Firefox, and Safari. Geolocation depends on browser permission and local device support.
+VibeCast uses modern browser APIs: Fetch, Canvas, Local Storage, Service Workers, and Geolocation. The core forecast works in current Chrome, Edge, Firefox, and Safari. Geolocation depends on browser permission and local device support.
 
 ## License
 

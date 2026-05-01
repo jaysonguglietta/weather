@@ -1,4 +1,4 @@
-const CACHE_NAME = "weatherboard-static-v17";
+const CACHE_NAME = "vibecast-static-v1";
 const STATIC_ASSETS = [
   "./",
   "./index.html",

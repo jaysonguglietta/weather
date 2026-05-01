@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.0
+
+- Renamed the app to VibeCast across the UI, install metadata, fallback copy, and documentation.
+- Reset the static service-worker cache namespace for the new brand.
+
 ## 1.13.0
 
 - Added Today in History with Wikimedia On This Day events and a local fallback.
@@ -55,5 +60,5 @@
 
 ## 1.0.0
 
-- Initial WeatherBoard web application.
+- Initial VibeCast web application.
 - Added current conditions, hourly chart, seven-day forecast, saved locations, unit switching, geolocation, static PWA assets, and documentation.

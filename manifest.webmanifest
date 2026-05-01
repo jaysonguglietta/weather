@@ -1,7 +1,7 @@
 {
-  "name": "WeatherBoard",
-  "short_name": "Weather",
-  "description": "Responsive browser weather app with current conditions, hourly trends, daily outlooks, and saved locations.",
+  "name": "VibeCast",
+  "short_name": "VibeCast",
+  "description": "Responsive browser weather app with current conditions, hourly trends, daily outlooks, daily extras, and saved locations.",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",

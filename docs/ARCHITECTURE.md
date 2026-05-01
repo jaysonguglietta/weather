@@ -1,6 +1,6 @@
 # Architecture
 
-WeatherBoard is intentionally small: it is a static frontend app that talks directly to Open-Meteo from the browser.
+VibeCast is intentionally small: it is a static frontend app that talks directly to Open-Meteo from the browser.
 
 ## File Map
 
@@ -51,7 +51,7 @@ The app keeps state in a single in-memory object:
 - `locationMode`: selected City or ZIP search mode.
 - `horoscopeSign`: selected zodiac sign for the daily horoscope panel.
 
-Persistent state is stored under `weatherboard.*` keys in Local Storage.
+Persistent state is stored under legacy `weatherboard.*` keys in Local Storage so saved locations and preferences survive the VibeCast rename.
 
 ## Floating Cats
 
