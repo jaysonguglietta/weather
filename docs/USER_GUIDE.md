@@ -12,6 +12,10 @@ Select `Use my location` and approve the browser permission request. If reverse 
 
 Weather News shows current National Weather Service alerts for the selected location. If there are no active alerts, it shows useful national weather resources.
 
+## Weather Scene
+
+The forecast scene animates with the current conditions, including falling rain or snow, drifting fog, storm flashes, clouds, and leaves blowing across the view. It becomes a still image when reduced motion is enabled.
+
 ## Today's Advice
 
 Today's Advice recommends whether to bring an umbrella, what kind of clothing to wear, whether it is a good dog park day, and any comfort or gear notes based on the selected location's forecast. The dog park recommendation includes sunrise, sunset, and humidity.

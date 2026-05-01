@@ -46,6 +46,7 @@ const CAT_PALETTE = [
 ];
 
 const WET_WEATHER_GROUPS = new Set(["rain", "storm", "snow"]);
+const LEAF_COLORS = ["#d86445", "#e8aa25", "#9b6f32", "#137c7f", "#7f9b4e"];
 
 const elements = {
   adviceSummary: document.querySelector("#adviceSummary"),
@@ -111,6 +112,20 @@ const catState = {
   frame: null,
   lastTime: 0,
   motionQuery: window.matchMedia("(prefers-reduced-motion: reduce)")
+};
+
+const sceneState = {
+  driftOffset: 0,
+  frame: null,
+  group: "clear",
+  height: 0,
+  isDay: true,
+  lastTime: 0,
+  leaves: [],
+  lightning: 0,
+  particles: [],
+  windMph: 0,
+  width: 0
 };
 
 function readJson(key, fallback) {
@@ -465,7 +480,7 @@ function renderWeather() {
   renderDailyAdvice(current, weather.daily, hours);
   renderHourly(hours);
   renderDaily(weather.daily);
-  drawWeatherScene(codeMeta.group, Boolean(current.is_day));
+  drawWeatherScene(codeMeta.group, Boolean(current.is_day), current.wind_speed_10m);
   drawTrendChart(hours);
 }
 
@@ -942,23 +957,212 @@ function createNewsCard(item) {
   return card;
 }
 
-function drawWeatherScene(group = "clear", isDay = true) {
+function drawWeatherScene(group = "clear", isDay = true, windSpeed = 0) {
+  stopWeatherScene();
+  sceneState.group = group;
+  sceneState.isDay = isDay;
+  sceneState.windMph = toMph(windSpeed) || 0;
+
+  if (!setupSceneCanvas()) {
+    return;
+  }
+
+  seedWeatherScene();
+  drawWeatherSceneFrame();
+
+  if (!catState.motionQuery.matches) {
+    sceneState.frame = requestAnimationFrame(animateWeatherScene);
+  }
+}
+
+function stopWeatherScene() {
+  if (sceneState.frame) {
+    cancelAnimationFrame(sceneState.frame);
+    sceneState.frame = null;
+  }
+
+  sceneState.lastTime = 0;
+}
+
+function setupSceneCanvas() {
   const canvas = elements.sceneCanvas;
   const context = canvas.getContext("2d");
   const rect = canvas.getBoundingClientRect();
   const ratio = window.devicePixelRatio || 1;
-  canvas.width = Math.max(1, Math.floor(rect.width * ratio));
-  canvas.height = Math.max(1, Math.floor(rect.height * ratio));
+  const width = Math.max(1, rect.width || canvas.clientWidth || 560);
+  const height = Math.max(1, rect.height || canvas.clientHeight || 320);
+  canvas.width = Math.max(1, Math.floor(width * ratio));
+  canvas.height = Math.max(1, Math.floor(height * ratio));
   context.setTransform(ratio, 0, 0, ratio, 0, 0);
+  sceneState.width = width;
+  sceneState.height = height;
 
-  const width = rect.width;
-  const height = rect.height;
+  return true;
+}
+
+function seedWeatherScene() {
+  const { group, height, width } = sceneState;
+  const wind = Math.min(sceneState.windMph, 40);
+  sceneState.driftOffset = Math.random() * width;
+  sceneState.lightning = group === "storm" && catState.motionQuery.matches ? 0.75 : 0;
+  sceneState.particles = [];
+
+  if (group === "rain" || group === "storm") {
+    const count = Math.min(96, Math.max(42, Math.round(width / (group === "storm" ? 7 : 9))));
+    sceneState.particles = Array.from({ length: count }, () => ({
+      drift: -42 - wind * 3.4 - Math.random() * 38,
+      length: 20 + Math.random() * 28,
+      opacity: 0.38 + Math.random() * 0.38,
+      speed: 420 + Math.random() * 360 + (group === "storm" ? 130 : 0),
+      x: Math.random() * width,
+      y: Math.random() * height
+    }));
+  }
+
+  if (group === "snow") {
+    const count = Math.min(90, Math.max(36, Math.round(width / 10)));
+    sceneState.particles = Array.from({ length: count }, () => ({
+      opacity: 0.56 + Math.random() * 0.34,
+      phase: Math.random() * Math.PI * 2,
+      size: 1.8 + Math.random() * 3.6,
+      speed: 28 + Math.random() * 58,
+      wobble: 1.4 + Math.random() * 2.4,
+      x: Math.random() * width,
+      y: Math.random() * height
+    }));
+  }
+
+  if (group === "fog") {
+    const count = 7;
+    sceneState.particles = Array.from({ length: count }, (_, index) => ({
+      opacity: 0.24 + Math.random() * 0.2,
+      phase: Math.random() * Math.PI * 2,
+      speed: 6 + Math.random() * 18 + wind * 0.3,
+      thickness: 8 + Math.random() * 8,
+      width: width * (0.74 + Math.random() * 0.32),
+      x: Math.random() * width - width * 0.5,
+      y: height * (0.34 + index * 0.075)
+    }));
+  }
+
+  seedLeaves(width, height, group);
+}
+
+function seedLeaves(width, height, group) {
+  const baseCount = Math.min(20, Math.max(9, Math.round(width / 58)));
+  const conditionBonus = ["clear", "cloud", "fog"].includes(group) ? 5 : 2;
+  const windBonus = Math.round(Math.min(sceneState.windMph, 30) / 6);
+  const count = baseCount + conditionBonus + windBonus;
+  sceneState.leaves = Array.from({ length: count }, () => {
+    const leaf = {};
+    resetLeaf(leaf, width, height, false);
+    return leaf;
+  });
+}
+
+function resetLeaf(leaf, width, height, startOffscreen = true) {
+  const wind = Math.min(Math.max(sceneState.windMph, 5), 36);
+  leaf.color = LEAF_COLORS[Math.floor(Math.random() * LEAF_COLORS.length)];
+  leaf.phase = Math.random() * Math.PI * 2;
+  leaf.rotation = Math.random() * Math.PI * 2;
+  leaf.rotationSpeed = (Math.random() > 0.5 ? 1 : -1) * (1.4 + Math.random() * 3.2);
+  leaf.size = 7 + Math.random() * 10;
+  leaf.speedX = 28 + wind * 2.2 + Math.random() * 54;
+  leaf.speedY = 8 + Math.random() * 24;
+  leaf.wave = 1.8 + Math.random() * 2.8;
+  leaf.x = startOffscreen ? -40 - Math.random() * width * 0.35 : Math.random() * width;
+  leaf.y = startOffscreen ? Math.random() * height * 0.68 : Math.random() * height;
+}
+
+function animateWeatherScene(time = 0) {
+  if (catState.motionQuery.matches) {
+    return;
+  }
+
+  const elapsed = sceneState.lastTime ? Math.min((time - sceneState.lastTime) / 1000, 0.05) : 0;
+  sceneState.lastTime = time;
+  updateWeatherScene(elapsed);
+  drawWeatherSceneFrame();
+  sceneState.frame = requestAnimationFrame(animateWeatherScene);
+}
+
+function updateWeatherScene(elapsed) {
+  const { group, height, width } = sceneState;
+  const wind = Math.min(sceneState.windMph, 42);
+  sceneState.driftOffset += elapsed * (10 + wind * 1.35);
+
+  if (group === "rain" || group === "storm") {
+    sceneState.particles.forEach((drop) => {
+      drop.x += drop.drift * elapsed;
+      drop.y += drop.speed * elapsed;
+
+      if (drop.y > height + drop.length || drop.x < -80) {
+        drop.x = Math.random() * (width + 120) + 40;
+        drop.y = -drop.length - Math.random() * 80;
+      }
+    });
+  }
+
+  if (group === "snow") {
+    sceneState.particles.forEach((flake) => {
+      flake.phase += elapsed * flake.wobble;
+      flake.x += (Math.sin(flake.phase) * 20 + wind * 1.15) * elapsed;
+      flake.y += flake.speed * elapsed;
+
+      if (flake.y > height + 10 || flake.x > width + 30) {
+        flake.x = Math.random() * width - 20;
+        flake.y = -10 - Math.random() * 60;
+      }
+    });
+  }
+
+  if (group === "fog") {
+    sceneState.particles.forEach((strip) => {
+      strip.x += strip.speed * elapsed;
+
+      if (strip.x > width + strip.width) {
+        strip.x = -strip.width;
+      }
+    });
+  }
+
+  if (group === "storm") {
+    if (sceneState.lightning > 0) {
+      sceneState.lightning = Math.max(0, sceneState.lightning - elapsed * 1.8);
+    } else if (Math.random() < elapsed * 0.36) {
+      sceneState.lightning = 0.95;
+    }
+  }
+
+  sceneState.leaves.forEach((leaf) => {
+    leaf.phase += elapsed * leaf.wave;
+    leaf.rotation += leaf.rotationSpeed * elapsed;
+    leaf.x += (leaf.speedX + Math.sin(leaf.phase) * 22) * elapsed;
+    leaf.y += (leaf.speedY + Math.cos(leaf.phase * 0.72) * 12) * elapsed;
+
+    if (leaf.x > width + 50 || leaf.y > height + 36) {
+      resetLeaf(leaf, width, height);
+    }
+  });
+}
+
+function drawWeatherSceneFrame() {
+  const canvas = elements.sceneCanvas;
+  const context = canvas.getContext("2d");
+  const { group, height, isDay, width } = sceneState;
+  const stormy = group === "storm";
+  const rainy = group === "rain";
   const sky = context.createLinearGradient(0, 0, width, height);
-  sky.addColorStop(0, isDay ? "#9dd8e8" : "#233d5d");
-  sky.addColorStop(0.55, isDay ? "#d7f0ed" : "#496d89");
-  sky.addColorStop(1, isDay ? "#ffe2a7" : "#0f202f");
+  sky.addColorStop(0, stormy ? "#5f8398" : rainy ? "#82b5c5" : isDay ? "#9dd8e8" : "#233d5d");
+  sky.addColorStop(0.55, stormy ? "#8ba4ac" : rainy ? "#b9d8da" : isDay ? "#d7f0ed" : "#496d89");
+  sky.addColorStop(1, stormy ? "#2c485d" : rainy ? "#d7cbb1" : isDay ? "#ffe2a7" : "#0f202f");
   context.fillStyle = sky;
   context.fillRect(0, 0, width, height);
+
+  if (stormy && sceneState.lightning > 0) {
+    context.fillStyle = `rgba(255, 247, 190, ${sceneState.lightning * 0.24})`;
+    context.fillRect(0, 0, width, height);
+  }
 
   if (isDay) {
     drawSun(context, width * 0.72, height * 0.28, Math.min(width, height) * 0.12);
@@ -966,8 +1170,18 @@ function drawWeatherScene(group = "clear", isDay = true) {
     drawMoon(context, width * 0.72, height * 0.28, Math.min(width, height) * 0.11);
   }
 
-  drawCloud(context, width * 0.43, height * 0.46, width * 0.34, isDay ? "rgba(255,255,255,0.9)" : "rgba(232,240,244,0.72)");
-  drawCloud(context, width * 0.22, height * 0.34, width * 0.22, "rgba(255,255,255,0.58)");
+  const cloudDrift = (sceneState.driftOffset % (width * 0.32)) - width * 0.16;
+  const cloudColor = stormy
+    ? "rgba(69,82,91,0.7)"
+    : rainy
+      ? "rgba(232,240,244,0.8)"
+      : isDay ? "rgba(255,255,255,0.9)" : "rgba(232,240,244,0.72)";
+  drawCloud(context, width * 0.43 + cloudDrift * 0.16, height * 0.46, width * 0.34, cloudColor);
+  drawCloud(context, width * 0.22 - cloudDrift * 0.22, height * 0.34, width * 0.22, "rgba(255,255,255,0.58)");
+
+  if (stormy) {
+    drawCloud(context, width * 0.7 + cloudDrift * 0.1, height * 0.38, width * 0.26, "rgba(58,68,76,0.58)");
+  }
 
   if (group === "rain" || group === "storm") {
     drawRain(context, width, height, group === "storm");
@@ -982,6 +1196,7 @@ function drawWeatherScene(group = "clear", isDay = true) {
   }
 
   drawHorizon(context, width, height);
+  drawLeaves(context, width, height);
 }
 
 function drawSun(context, x, y, radius) {
@@ -1022,19 +1237,19 @@ function drawCloud(context, x, y, width, color) {
 }
 
 function drawRain(context, width, height, storm) {
-  context.strokeStyle = "rgba(73,109,137,0.72)";
-  context.lineWidth = 2;
-  for (let index = 0; index < 34; index += 1) {
-    const x = ((index * 53) % width) + width * 0.02;
-    const y = height * 0.48 + ((index * 29) % (height * 0.36));
+  context.save();
+  context.lineCap = "round";
+  context.lineWidth = storm ? 2.2 : 1.8;
+  sceneState.particles.forEach((drop) => {
+    context.strokeStyle = `rgba(73,109,137,${drop.opacity})`;
     context.beginPath();
-    context.moveTo(x, y);
-    context.lineTo(x - 12, y + 28);
+    context.moveTo(drop.x, drop.y);
+    context.lineTo(drop.x + drop.drift * 0.07, drop.y + drop.length);
     context.stroke();
-  }
+  });
 
-  if (storm) {
-    context.fillStyle = "#f5ce4b";
+  if (storm && sceneState.lightning > 0) {
+    context.fillStyle = `rgba(245,206,75,${0.45 + sceneState.lightning * 0.45})`;
     context.beginPath();
     context.moveTo(width * 0.52, height * 0.48);
     context.lineTo(width * 0.45, height * 0.66);
@@ -1045,30 +1260,57 @@ function drawRain(context, width, height, storm) {
     context.closePath();
     context.fill();
   }
+  context.restore();
 }
 
 function drawSnow(context, width, height) {
-  context.fillStyle = "rgba(255,255,255,0.9)";
-  for (let index = 0; index < 38; index += 1) {
-    const x = ((index * 47) % width) + width * 0.02;
-    const y = height * 0.46 + ((index * 31) % (height * 0.42));
+  context.save();
+  sceneState.particles.forEach((flake) => {
+    context.fillStyle = `rgba(255,255,255,${flake.opacity})`;
     context.beginPath();
-    context.arc(x, y, 2 + (index % 3), 0, Math.PI * 2);
+    context.arc(flake.x, flake.y, flake.size, 0, Math.PI * 2);
     context.fill();
-  }
+  });
+  context.restore();
 }
 
 function drawFog(context, width, height) {
-  context.strokeStyle = "rgba(255,255,255,0.72)";
-  context.lineWidth = 9;
+  context.save();
   context.lineCap = "round";
-  for (let index = 0; index < 5; index += 1) {
-    const y = height * (0.42 + index * 0.09);
+  sceneState.particles.forEach((strip) => {
+    const y = strip.y + Math.sin(sceneState.driftOffset / 46 + strip.phase) * 10;
+    context.strokeStyle = `rgba(255,255,255,${strip.opacity})`;
+    context.lineWidth = strip.thickness;
+
+    [strip.x, strip.x - strip.width - width * 0.1].forEach((x) => {
+      context.beginPath();
+      context.moveTo(x, y);
+      context.bezierCurveTo(x + strip.width * 0.25, y - 22, x + strip.width * 0.58, y + 22, x + strip.width, y);
+      context.stroke();
+    });
+  });
+  context.restore();
+}
+
+function drawLeaves(context, width, height) {
+  context.save();
+  sceneState.leaves.forEach((leaf) => {
+    context.save();
+    context.translate(leaf.x, leaf.y);
+    context.rotate(leaf.rotation);
+    context.fillStyle = leaf.color;
+    context.strokeStyle = "rgba(73,64,48,0.32)";
+    context.lineWidth = 1;
     context.beginPath();
-    context.moveTo(width * 0.12, y);
-    context.bezierCurveTo(width * 0.32, y - 18, width * 0.52, y + 18, width * 0.88, y);
+    context.ellipse(0, 0, leaf.size * 0.62, leaf.size * 0.25, 0, 0, Math.PI * 2);
+    context.fill();
+    context.beginPath();
+    context.moveTo(-leaf.size * 0.44, 0);
+    context.lineTo(leaf.size * 0.44, 0);
     context.stroke();
-  }
+    context.restore();
+  });
+  context.restore();
 }
 
 function drawHorizon(context, width, height) {
@@ -1402,6 +1644,22 @@ function toggleCats() {
   setStatus(state.catsEnabled ? "Floating cat heads activated." : "Floating cat heads paused.");
 }
 
+function drawCurrentWeatherScene() {
+  if (!state.weather) {
+    drawWeatherScene("clear", true, 0);
+    return;
+  }
+
+  const current = state.weather.current;
+  const meta = WEATHER_CODES[current.weather_code] || { group: "cloud" };
+  drawWeatherScene(meta.group, Boolean(current.is_day), current.wind_speed_10m);
+}
+
+function handleMotionPreferenceChange() {
+  startCats();
+  drawCurrentWeatherScene();
+}
+
 function updateLocationMode() {
   const zipMode = state.locationMode === "zip";
   elements.locationInput.placeholder = zipMode ? "Enter ZIP code" : "City, town, or ZIP";
@@ -1455,18 +1713,14 @@ function bindEvents() {
       createCats();
     }
 
-    if (!state.weather) {
-      drawWeatherScene("clear", true);
-      return;
-    }
+    drawCurrentWeatherScene();
 
-    const current = state.weather.current;
-    const meta = WEATHER_CODES[current.weather_code] || { group: "cloud" };
-    drawWeatherScene(meta.group, Boolean(current.is_day));
-    drawTrendChart(getUpcomingHours(state.weather, 12));
+    if (state.weather) {
+      drawTrendChart(getUpcomingHours(state.weather, 12));
+    }
   });
 
-  catState.motionQuery.addEventListener("change", startCats);
+  catState.motionQuery.addEventListener("change", handleMotionPreferenceChange);
 }
 
 async function registerServiceWorker() {
@@ -1485,7 +1739,7 @@ function init() {
   bindEvents();
   updateLocationMode();
   renderFavorites();
-  drawWeatherScene("clear", true);
+  drawWeatherScene("clear", true, 0);
   startCats();
   registerServiceWorker();
 

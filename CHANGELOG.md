@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.0
+
+- Added animated weather scenes with falling rain, snow, drifting fog, storm flashes, moving clouds, and wind-blown leaves.
+- Kept the scene compatible with reduced-motion preferences.
+
 ## 1.5.0
 
 - Added dog park recommendations with sunrise, sunset, and humidity context.

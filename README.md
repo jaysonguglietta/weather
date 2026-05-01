@@ -12,6 +12,7 @@ WeatherBoard is a responsive, installable browser weather app. It uses the free 
 - Daily advice for umbrella, outfit, comfort, dog park conditions, and weather-specific gear.
 - Weather News section with location-specific National Weather Service alerts and weather-resource links.
 - Seven-day forecast with high and low temperature ranges.
+- Animated weather scene with falling rain, snow, fog drift, storm flashes, and wind-blown leaves.
 - Saved locations stored locally in the browser.
 - Optional floating cat heads that bounce around the screen.
 - Static PWA assets cached by a service worker.

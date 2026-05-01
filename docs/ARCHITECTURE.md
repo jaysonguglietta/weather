@@ -5,8 +5,8 @@ WeatherBoard is intentionally small: it is a static frontend app that talks dire
 ## File Map
 
 - `index.html`: semantic app shell, controls, forecast panels, and canvas elements.
-- `styles.css`: responsive layout, component styling, accessible focus states, chart containers, and the floating cat layer.
-- `app.js`: API calls, state management, rendering, canvas drawing, favorites, unit toggles, floating cat animation, and service worker registration.
+- `styles.css`: responsive layout, component styling, accessible focus states, chart containers, and decorative animation layers.
+- `app.js`: API calls, state management, rendering, animated canvas drawing, favorites, unit toggles, floating cat animation, and service worker registration.
 - `sw.js`: static asset cache for repeat visits.
 - `manifest.webmanifest`: installable app metadata.
 - `assets/weather-mark.svg`: app icon and favicon.
@@ -20,7 +20,7 @@ WeatherBoard is intentionally small: it is a static frontend app that talks dire
 5. Forecast data is fetched with current, hourly, and daily fields in the selected unit system.
 6. Weather News fetches active National Weather Service alerts for the selected coordinates.
 7. Daily advice is computed from current, hourly, and daily forecast values, including dog park guidance.
-8. The current panel, advice panel, hourly chart, Weather News section, seven-day list, and detail panel are rendered from the response data.
+8. The current panel, advice panel, animated scene, hourly chart, Weather News section, seven-day list, and detail panel are rendered from the response data.
 9. Favorites and unit preferences are stored in `localStorage`.
 
 ## Data Sources
@@ -53,6 +53,10 @@ Persistent state is stored under `weatherboard.*` keys in Local Storage.
 ## Floating Cats
 
 The floating cat heads are generated as inline SVG elements in `app.js` and animated with `requestAnimationFrame`. They are decorative, hidden from assistive technology, and click-through so they do not block forecast controls. The app disables the animation when the browser reports `prefers-reduced-motion: reduce`.
+
+## Weather Scene
+
+The decorative weather scene is a canvas rendered from the active weather code group, day/night flag, and wind speed. Rain, snow, fog, storm flashes, drifting clouds, and wind-blown leaves share one `requestAnimationFrame` loop. When reduced motion is enabled, the app renders a still scene instead of starting the animation loop.
 
 ## Offline Behavior
 
