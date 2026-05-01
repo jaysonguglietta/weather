@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#137c7f">
+    <meta
+      name="description"
+      content="WeatherBoard is a responsive browser weather app with current conditions, hourly trends, daily forecasts, favorites, and offline-ready app assets."
+    >
+    <title>WeatherBoard</title>
+    <link rel="icon" href="assets/weather-mark.svg" type="image/svg+xml">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#content">Skip to forecast</a>
+
+    <header class="app-header">
+      <div class="brand">
+        <img src="assets/weather-mark.svg" alt="" width="44" height="44">
+        <div>
+          <p class="eyebrow">WeatherBoard</p>
+          <h1>Live local forecast</h1>
+        </div>
+      </div>
+
+      <fieldset class="unit-switch" aria-label="Temperature units">
+        <label>
+          <input type="radio" name="units" value="imperial" checked>
+          <span>&deg;F</span>
+        </label>
+        <label>
+          <input type="radio" name="units" value="metric">
+          <span>&deg;C</span>
+        </label>
+      </fieldset>
+    </header>
+
+    <main class="app-shell" id="content">
+      <aside class="control-panel" aria-label="Location controls">
+        <form class="search-form" id="searchForm">
+          <label for="locationInput">Location</label>
+          <div class="search-row">
+            <input
+              id="locationInput"
+              name="location"
+              type="search"
+              autocomplete="postal-code"
+              placeholder="City or ZIP"
+              required
+            >
+            <button class="icon-button primary" type="submit" aria-label="Search location">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M10.8 18.1a7.3 7.3 0 1 1 5.2-2.1l4 4-1.5 1.5-4-4a7.2 7.2 0 0 1-3.7 1.1Zm0-2.1a5.2 5.2 0 1 0 0-10.4 5.2 5.2 0 0 0 0 10.4Z"></path>
+              </svg>
+            </button>
+          </div>
+        </form>
+
+        <div class="quick-actions">
+          <button class="text-button" id="locationButton" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2.5 4.4 21.2l7.6-3.1 7.6 3.1L12 2.5Zm0 5.5 4 9.7-4-1.6-4 1.6L12 8Z"></path>
+            </svg>
+            Use my location
+          </button>
+          <button class="icon-button" id="saveFavoriteButton" type="button" aria-label="Save current location" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 9.6l6.2-.9L12 3Zm0 4.8-1.4 2.9-3.2.5 2.3 2.2-.5 3.2 2.8-1.5 2.8 1.5-.5-3.2 2.3-2.2-3.2-.5L12 7.8Z"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="status-line" id="statusLine" role="status" aria-live="polite"></div>
+
+        <section class="saved-locations" aria-labelledby="savedHeading">
+          <div class="section-heading">
+            <h2 id="savedHeading">Saved</h2>
+            <button class="link-button" id="clearFavoritesButton" type="button">Clear</button>
+          </div>
+          <div class="favorite-list" id="favoriteList"></div>
+        </section>
+
+        <section class="compact-panel" aria-labelledby="sourceHeading">
+          <h2 id="sourceHeading">Source</h2>
+          <p>Forecast data by Open-Meteo.</p>
+        </section>
+      </aside>
+
+      <div class="forecast-space">
+        <section class="current-panel" aria-labelledby="currentHeading">
+          <div class="current-copy">
+            <p class="eyebrow" id="updatedAt">Ready</p>
+            <h2 id="currentHeading">Choose a location</h2>
+            <div class="condition-row">
+              <span class="temperature" id="currentTemp">--</span>
+              <span class="condition" id="currentCondition">Forecast will appear here.</span>
+            </div>
+            <div class="metric-grid" aria-label="Current weather details">
+              <article>
+                <span>Feels</span>
+                <strong id="feelsLike">--</strong>
+              </article>
+              <article>
+                <span>Humidity</span>
+                <strong id="humidity">--</strong>
+              </article>
+              <article>
+                <span>Wind</span>
+                <strong id="wind">--</strong>
+              </article>
+              <article>
+                <span>Pressure</span>
+                <strong id="pressure">--</strong>
+              </article>
+            </div>
+          </div>
+
+          <div class="scene-wrap" aria-hidden="true">
+            <canvas id="sceneCanvas" width="560" height="360"></canvas>
+          </div>
+        </section>
+
+        <section class="data-panel" aria-labelledby="hourlyHeading">
+          <div class="section-heading">
+            <h2 id="hourlyHeading">Next 12 hours</h2>
+            <span id="hourlySummary">--</span>
+          </div>
+          <canvas class="trend-canvas" id="trendCanvas" width="920" height="260" aria-label="Hourly temperature and precipitation chart"></canvas>
+          <div class="hourly-list" id="hourlyList"></div>
+        </section>
+
+        <div class="lower-grid">
+          <section class="data-panel" aria-labelledby="dailyHeading">
+            <div class="section-heading">
+              <h2 id="dailyHeading">Seven days</h2>
+              <span id="dailySummary">--</span>
+            </div>
+            <div class="daily-list" id="dailyList"></div>
+          </section>
+
+          <section class="data-panel" aria-labelledby="sunHeading">
+            <div class="section-heading">
+              <h2 id="sunHeading">Today</h2>
+              <span id="timezoneLabel">--</span>
+            </div>
+            <dl class="detail-list">
+              <div>
+                <dt>Sunrise</dt>
+                <dd id="sunrise">--</dd>
+              </div>
+              <div>
+                <dt>Sunset</dt>
+                <dd id="sunset">--</dd>
+              </div>
+              <div>
+                <dt>UV index</dt>
+                <dd id="uvIndex">--</dd>
+              </div>
+              <div>
+                <dt>Cloud cover</dt>
+                <dd id="cloudCover">--</dd>
+              </div>
+              <div>
+                <dt>Precipitation</dt>
+                <dd id="precipitation">--</dd>
+              </div>
+              <div>
+                <dt>Gusts</dt>
+                <dd id="gusts">--</dd>
+              </div>
+            </dl>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <noscript>
+      <p class="noscript">WeatherBoard needs JavaScript enabled to load live forecasts.</p>
+    </noscript>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>

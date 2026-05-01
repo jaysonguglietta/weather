@@ -1,0 +1,18 @@
+{
+  "name": "WeatherBoard",
+  "short_name": "Weather",
+  "description": "Responsive browser weather app with current conditions, hourly trends, daily outlooks, and saved locations.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#f6f7f2",
+  "theme_color": "#137c7f",
+  "icons": [
+    {
+      "src": "assets/weather-mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
