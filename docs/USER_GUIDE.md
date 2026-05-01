@@ -16,6 +16,10 @@ Weather News shows current National Weather Service alerts for the selected loca
 
 The forecast scene animates with the current conditions, including falling rain or snow, drifting fog, storm flashes, clouds, and leaves blowing across the view. It becomes a still image when reduced motion is enabled.
 
+## Page Weather Effect
+
+The whole page has a 90% transparent weather overlay that mirrors the selected forecast. It is decorative and click-through, so controls still work normally.
+
 ## Today's Advice
 
 Today's Advice recommends whether to bring an umbrella, what kind of clothing to wear, whether it is a good dog park day, and any comfort or gear notes based on the selected location's forecast. The dog park recommendation includes sunrise, sunset, and humidity.

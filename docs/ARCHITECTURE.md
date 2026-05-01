@@ -6,7 +6,7 @@ WeatherBoard is intentionally small: it is a static frontend app that talks dire
 
 - `index.html`: semantic app shell, controls, forecast panels, and canvas elements.
 - `styles.css`: responsive layout, component styling, accessible focus states, chart containers, and decorative animation layers.
-- `app.js`: API calls, state management, rendering, weather trivia, weather glossary terms, animated canvas drawing, favorites, unit toggles, floating cat animation, and service worker registration.
+- `app.js`: API calls, state management, rendering, weather trivia, weather glossary terms, animated canvas drawing, whole-page weather overlay, favorites, unit toggles, floating cat animation, and service worker registration.
 - `sw.js`: static asset cache for repeat visits.
 - `manifest.webmanifest`: installable app metadata.
 - `assets/weather-mark.svg`: app icon and favicon.
@@ -20,7 +20,7 @@ WeatherBoard is intentionally small: it is a static frontend app that talks dire
 5. Forecast data is fetched with current, hourly, and daily fields in the selected unit system.
 6. Weather News fetches active National Weather Service alerts for the selected coordinates.
 7. Daily advice, local weather trivia, and the Weather Word of the Day are computed from current, hourly, and daily forecast values, including dog park guidance.
-8. The current panel, advice panel, trivia panel, word panel, animated scene, hourly chart, Weather News section, seven-day list, and detail panel are rendered from the response data.
+8. The current panel, advice panel, trivia panel, word panel, animated scene, 90% transparent page overlay, hourly chart, Weather News section, seven-day list, and detail panel are rendered from the response data.
 9. Favorites and unit preferences are stored in `localStorage`.
 
 ## Data Sources
@@ -57,6 +57,10 @@ The floating cat heads are generated as inline SVG elements in `app.js` and anim
 ## Weather Scene
 
 The decorative weather scene is a canvas rendered from the active weather code group, day/night flag, and wind speed. Rain, snow, fog, storm flashes, drifting clouds, and wind-blown leaves share one `requestAnimationFrame` loop. When reduced motion is enabled, the app renders a still scene instead of starting the animation loop.
+
+## Weather Overlay
+
+The full-page overlay is a fixed, click-through canvas at 10% opacity, making it 90% transparent. It mirrors the active forecast with rain streaks, snow, fog bands, storm flashes, or light drifting particles and switches to a still frame when reduced motion is enabled.
 
 ## Local Weather Trivia
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.9.0
+
+- Added a 90% transparent whole-page weather overlay that mirrors the current local forecast.
+
 ## 1.8.0
 
 - Added Weather Word of the Day with local glossary definitions, examples, and forecast-aware context.

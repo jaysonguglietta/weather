@@ -34,6 +34,7 @@ Then load the app in a browser and confirm:
 - Weather Word of the Day renders a term, definition, example, and local forecast context.
 - Weather News loads National Weather Service alerts or shows fallback resource cards.
 - The weather scene animates for rain, snow, fog, storm, and leaf motion, and becomes still when reduced motion is active.
+- The 90% transparent page overlay mirrors the active weather group without blocking clicks.
 - Unit switching refetches values.
 - Saving and removing locations works.
 - The layout remains usable on a narrow viewport.
