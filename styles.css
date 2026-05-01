@@ -596,6 +596,58 @@ button:focus-visible,
   line-height: 1.4;
 }
 
+.word-card {
+  display: grid;
+  grid-template-columns: minmax(12rem, 0.35fr) minmax(0, 1fr);
+  gap: 1rem;
+  border: 1px solid rgba(55, 119, 182, 0.2);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(135deg, rgba(55, 119, 182, 0.08), transparent 44%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(238, 246, 242, 0.78));
+  padding: 1rem;
+}
+
+.word-title {
+  display: grid;
+  align-content: start;
+  gap: 0.45rem;
+}
+
+.word-title span {
+  color: var(--blue);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.word-title strong {
+  font-size: 1.65rem;
+  line-height: 1.08;
+  overflow-wrap: anywhere;
+}
+
+.word-copy {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.word-copy p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.48;
+}
+
+.word-copy .word-example {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.word-context {
+  border-top: 1px solid rgba(55, 119, 182, 0.18);
+  padding-top: 0.6rem;
+}
+
 .hourly-list {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -809,6 +861,10 @@ button:focus-visible,
 
   .news-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .word-card {
+    grid-template-columns: 1fr;
   }
 }
 

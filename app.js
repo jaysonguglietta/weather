@@ -47,6 +47,106 @@ const CAT_PALETTE = [
 
 const WET_WEATHER_GROUPS = new Set(["rain", "storm", "snow"]);
 const LEAF_COLORS = ["#d86445", "#e8aa25", "#9b6f32", "#137c7f", "#7f9b4e"];
+const WEATHER_WORDS = [
+  {
+    definition: "The horizontal movement of air that carries heat, moisture, or smoke from one place to another.",
+    example: "A sea breeze pushing cooler ocean air inland is advection at work.",
+    groups: ["clear", "cloud", "fog"],
+    label: "Air movement",
+    term: "Advection"
+  },
+  {
+    definition: "How much sunlight a surface reflects instead of absorbs.",
+    example: "Fresh snow has high albedo, so it reflects a lot of incoming sunlight.",
+    groups: ["clear", "snow"],
+    label: "Sun science",
+    term: "Albedo"
+  },
+  {
+    definition: "A tool that measures wind speed.",
+    example: "Airport weather stations use anemometers to report the wind in each observation.",
+    groups: ["clear", "cloud", "rain", "storm"],
+    label: "Instrument",
+    term: "Anemometer"
+  },
+  {
+    definition: "A flat, spreading cloud shield at the top of a strong thunderstorm.",
+    example: "An anvil cloud can stretch far downwind from the storm that created it.",
+    groups: ["storm"],
+    label: "Storm shape",
+    term: "Anvil"
+  },
+  {
+    definition: "The temperature at which air becomes saturated and water vapor can condense.",
+    example: "When air cools to its dew point, fog, clouds, or dew can form.",
+    groups: ["fog", "rain", "cloud"],
+    label: "Moisture",
+    term: "Dew point"
+  },
+  {
+    definition: "A boundary between two air masses with different temperature or humidity.",
+    example: "A cold front can bring a wind shift, showers, or a quick temperature drop.",
+    groups: ["cloud", "rain", "storm", "snow"],
+    label: "Boundary",
+    term: "Front"
+  },
+  {
+    definition: "Soft snow pellets that form when supercooled droplets freeze onto snowflakes.",
+    example: "Graupel can look like tiny foam beads bouncing off the ground.",
+    groups: ["snow", "storm"],
+    label: "Frozen stuff",
+    term: "Graupel"
+  },
+  {
+    definition: "A line on a weather map connecting points with equal air pressure.",
+    example: "Closely packed isobars usually mean stronger wind.",
+    groups: ["clear", "cloud", "rain", "storm", "snow"],
+    label: "Map reading",
+    term: "Isobar"
+  },
+  {
+    definition: "Cool, moist ocean air that spreads inland, often with low clouds or fog.",
+    example: "A marine layer can make the coast cloudy while inland areas stay sunny.",
+    groups: ["fog", "cloud"],
+    label: "Coastal weather",
+    term: "Marine layer"
+  },
+  {
+    definition: "A small area with weather that differs from nearby places.",
+    example: "A shady park, a downtown block, and a hilltop can each have their own microclimate.",
+    groups: ["clear", "cloud", "fog"],
+    label: "Local detail",
+    term: "Microclimate"
+  },
+  {
+    definition: "Cool air spreading outward from a thunderstorm after rain-cooled air sinks.",
+    example: "An outflow boundary can kick up gusty wind before rain reaches you.",
+    groups: ["storm", "rain"],
+    label: "Storm wind",
+    term: "Outflow boundary"
+  },
+  {
+    definition: "A dry area on the downwind side of mountains after air loses moisture on the windward side.",
+    example: "Rain shadows help explain why some inland valleys stay much drier than nearby slopes.",
+    groups: ["clear", "cloud"],
+    label: "Terrain effect",
+    term: "Rain shadow"
+  },
+  {
+    definition: "Cooling that happens when the ground loses heat on clear, calm nights.",
+    example: "Radiational cooling can make low spots colder than surrounding neighborhoods before sunrise.",
+    groups: ["clear", "fog", "snow"],
+    label: "Night cooling",
+    term: "Radiational cooling"
+  },
+  {
+    definition: "Rain or snow that evaporates or sublimates before reaching the ground.",
+    example: "Virga can look like streaks hanging under a cloud with dry air below.",
+    groups: ["cloud", "rain", "snow"],
+    label: "Sky clue",
+    term: "Virga"
+  }
+];
 
 const elements = {
   adviceSummary: document.querySelector("#adviceSummary"),
@@ -95,7 +195,13 @@ const elements = {
   unitInputs: document.querySelectorAll("input[name='units']"),
   updatedAt: document.querySelector("#updatedAt"),
   uvIndex: document.querySelector("#uvIndex"),
-  wind: document.querySelector("#wind")
+  wind: document.querySelector("#wind"),
+  wordContext: document.querySelector("#wordContext"),
+  wordDefinition: document.querySelector("#wordDefinition"),
+  wordExample: document.querySelector("#wordExample"),
+  wordLabel: document.querySelector("#wordLabel"),
+  wordSummary: document.querySelector("#wordSummary"),
+  wordTerm: document.querySelector("#wordTerm")
 };
 
 const state = {
@@ -283,6 +389,12 @@ function directionName(compass) {
     SW: "southwest",
     W: "west"
   }[compass] || "variable directions";
+}
+
+function hashString(value) {
+  return Array.from(String(value)).reduce((hash, character) => (
+    ((hash << 5) - hash + character.charCodeAt(0)) | 0
+  ), 0);
 }
 
 function formatHour(value) {
@@ -525,6 +637,7 @@ function renderWeather() {
   const hours = getUpcomingHours(weather, 12);
   renderDailyAdvice(current, weather.daily, hours);
   renderWeatherTrivia(current, weather.daily, hours);
+  renderWeatherWord(current, weather.daily, hours);
   renderHourly(hours);
   renderDaily(weather.daily);
   drawWeatherScene(codeMeta.group, Boolean(current.is_day), current.wind_speed_10m);
@@ -710,6 +823,54 @@ function humidityTrivia(humidity, temperature, apparentTemperature) {
   }
 
   return "That sits in a moderate range: enough moisture to notice, but not usually the sticky end of the scale.";
+}
+
+function renderWeatherWord(current, daily, hours) {
+  const word = buildWeatherWord(current, daily, hours, state.location);
+  elements.wordSummary.textContent = word.summary;
+  elements.wordLabel.textContent = word.label;
+  elements.wordTerm.textContent = word.term;
+  elements.wordDefinition.textContent = word.definition;
+  elements.wordExample.textContent = word.example;
+  elements.wordContext.textContent = word.context;
+}
+
+function buildWeatherWord(current, daily, hours, location) {
+  const date = String(current.time || new Date().toISOString()).split("T")[0];
+  const group = weatherGroup(current.weather_code);
+  const matchingWords = WEATHER_WORDS.filter((word) => word.groups.includes(group));
+  const wordPool = matchingWords.length ? matchingWords : WEATHER_WORDS;
+  const seed = Math.abs(hashString(`${date}-${group}-${location ? location.id : "default"}`));
+  const word = wordPool[seed % wordPool.length];
+
+  return {
+    ...word,
+    context: buildWeatherWordContext(word, current, daily, hours, location),
+    summary: `${formatDay(date)} glossary`
+  };
+}
+
+function buildWeatherWordContext(word, current, daily, hours, location) {
+  const units = unitConfig();
+  const group = weatherGroup(current.weather_code);
+  const place = (location && location.name) || "this location";
+  const meta = WEATHER_CODES[current.weather_code] || { label: "local weather" };
+  const high = daily.temperature_2m_max[0];
+  const low = daily.temperature_2m_min[0];
+  const maxPrecip = Math.max(
+    daily.precipitation_probability_max[0] || 0,
+    ...hours.map((hour) => hour.precipitation || 0)
+  );
+  const groupNotes = {
+    clear: `Today has ${meta.label.toLowerCase()} in ${place}, with a ${formatDegreeDelta(Number(high) - Number(low))} temperature spread to notice.`,
+    cloud: `${place} is seeing ${meta.label.toLowerCase()}, so cloud cover and pressure patterns are worth watching.`,
+    fog: `${place} has ${meta.label.toLowerCase()}, with humidity near ${formatNumber(current.relative_humidity_2m)}%.`,
+    rain: `${place} has ${meta.label.toLowerCase()} in the forecast, and rain chances peak near ${formatNumber(maxPrecip)}%.`,
+    snow: `${place} has ${meta.label.toLowerCase()} in the forecast, with temperatures ranging from ${formatTempText(low)} to ${formatTempText(high)}.`,
+    storm: `${place} has ${meta.label.toLowerCase()} in the forecast, with gusts near ${formatNumber(current.wind_gusts_10m)} ${units.speed}.`
+  };
+
+  return `${groupNotes[group] || `Today's forecast for ${place} gives you a fresh weather pattern to read.`} ${word.term} helps explain one piece of that setup.`;
 }
 
 function buildDailyAdvice(current, daily, hours) {

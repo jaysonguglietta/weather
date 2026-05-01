@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.0
+
+- Added Weather Word of the Day with local glossary definitions, examples, and forecast-aware context.
+
 ## 1.7.0
 
 - Added Local Weather Trivia cards for daylight duration, temperature swing, humidity feel, wind direction, and rain probability.

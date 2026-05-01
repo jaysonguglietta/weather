@@ -24,6 +24,10 @@ Today's Advice recommends whether to bring an umbrella, what kind of clothing to
 
 Local Weather Trivia shows quick facts for the selected forecast, including daylight duration, temperature swing, humidity feel, wind direction, and peak rain chance.
 
+## Weather Word of the Day
+
+Weather Word of the Day introduces one glossary term for the loaded forecast. It includes a plain-language definition, example, and a note that connects the word to the selected location's conditions.
+
 ## Change Units
 
 Use the `F` and `C` segmented control in the header. WeatherBoard refetches the forecast using the selected unit system.

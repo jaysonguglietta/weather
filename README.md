@@ -11,6 +11,7 @@ WeatherBoard is a responsive, installable browser weather app. It uses the free 
 - Next-12-hours trend chart and compact hourly forecast cards.
 - Daily advice for umbrella, outfit, comfort, dog park conditions, and weather-specific gear.
 - Local Weather Trivia cards for daylight, temperature swing, humidity, wind direction, and precipitation odds.
+- Weather Word of the Day with a local glossary term tied to the current forecast pattern.
 - Weather News section with location-specific National Weather Service alerts and weather-resource links.
 - Seven-day forecast with high and low temperature ranges.
 - Animated weather scene with falling rain, snow, fog drift, storm flashes, and wind-blown leaves.

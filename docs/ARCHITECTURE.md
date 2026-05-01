@@ -6,7 +6,7 @@ WeatherBoard is intentionally small: it is a static frontend app that talks dire
 
 - `index.html`: semantic app shell, controls, forecast panels, and canvas elements.
 - `styles.css`: responsive layout, component styling, accessible focus states, chart containers, and decorative animation layers.
-- `app.js`: API calls, state management, rendering, weather trivia, animated canvas drawing, favorites, unit toggles, floating cat animation, and service worker registration.
+- `app.js`: API calls, state management, rendering, weather trivia, weather glossary terms, animated canvas drawing, favorites, unit toggles, floating cat animation, and service worker registration.
 - `sw.js`: static asset cache for repeat visits.
 - `manifest.webmanifest`: installable app metadata.
 - `assets/weather-mark.svg`: app icon and favicon.
@@ -19,8 +19,8 @@ WeatherBoard is intentionally small: it is a static frontend app that talks dire
 4. ZIP searches call Zippopotam.us to resolve a US ZIP code to coordinates.
 5. Forecast data is fetched with current, hourly, and daily fields in the selected unit system.
 6. Weather News fetches active National Weather Service alerts for the selected coordinates.
-7. Daily advice and local weather trivia are computed from current, hourly, and daily forecast values, including dog park guidance.
-8. The current panel, advice panel, trivia panel, animated scene, hourly chart, Weather News section, seven-day list, and detail panel are rendered from the response data.
+7. Daily advice, local weather trivia, and the Weather Word of the Day are computed from current, hourly, and daily forecast values, including dog park guidance.
+8. The current panel, advice panel, trivia panel, word panel, animated scene, hourly chart, Weather News section, seven-day list, and detail panel are rendered from the response data.
 9. Favorites and unit preferences are stored in `localStorage`.
 
 ## Data Sources
@@ -61,6 +61,10 @@ The decorative weather scene is a canvas rendered from the active weather code g
 ## Local Weather Trivia
 
 The trivia panel is generated locally from the active forecast response. It summarizes daylight duration, daily temperature spread, humidity feel, wind direction, and peak precipitation probability without adding another network request.
+
+## Weather Word of the Day
+
+The word panel is generated from a local glossary. The selected term is deterministic for the forecast date, location, and active weather group, then paired with a short definition, example, and local forecast context.
 
 ## Offline Behavior
 

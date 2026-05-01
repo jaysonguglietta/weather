@@ -31,6 +31,7 @@ Then load the app in a browser and confirm:
 - ZIP mode accepts a 5-digit US ZIP code and loads a forecast.
 - Today's Advice updates after each forecast load and after unit changes, including the dog park recommendation.
 - Local Weather Trivia updates after each forecast load and unit change.
+- Weather Word of the Day renders a term, definition, example, and local forecast context.
 - Weather News loads National Weather Service alerts or shows fallback resource cards.
 - The weather scene animates for rain, snow, fog, storm, and leaf motion, and becomes still when reduced motion is active.
 - Unit switching refetches values.
