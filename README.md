@@ -4,7 +4,7 @@ WeatherBoard is a responsive, installable browser weather app. It uses the free 
 
 ## Features
 
-- Current conditions with temperature, feels-like temperature, humidity, wind, pressure, cloud cover, UV index, sunrise, and sunset.
+- Current conditions with temperature, feels-like temperature, humidity, wind, pressure, cloud cover, UV index, sunrise, sunset, and moon phase.
 - City search through Open-Meteo geocoding.
 - Dedicated US ZIP code entry through Zippopotam.us.
 - Browser geolocation support.

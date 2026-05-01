@@ -24,6 +24,8 @@ The whole page has a 90% transparent weather overlay that mirrors the selected f
 
 Today's Advice recommends whether to bring an umbrella, what kind of clothing to wear, whether it is a good dog park day, and any comfort or gear notes based on the selected location's forecast. The dog park recommendation includes sunrise, sunset, and humidity.
 
+The Today panel also shows the day's moon phase and approximate illumination percentage.
+
 ## Local Weather Trivia
 
 Local Weather Trivia shows quick facts for the selected forecast, including daylight duration, temperature swing, humidity feel, wind direction, and peak rain chance.

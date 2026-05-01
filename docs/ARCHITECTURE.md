@@ -19,7 +19,7 @@ WeatherBoard is intentionally small: it is a static frontend app that talks dire
 4. ZIP searches call Zippopotam.us to resolve a US ZIP code to coordinates.
 5. Forecast data is fetched with current, hourly, and daily fields in the selected unit system.
 6. Weather News fetches active National Weather Service alerts for the selected coordinates.
-7. Daily advice, local weather trivia, and the Weather Word of the Day are computed from current, hourly, and daily forecast values, including dog park guidance.
+7. Daily advice, local weather trivia, moon phase, and the Weather Word of the Day are computed from current, hourly, and daily forecast values, including dog park guidance.
 8. The current panel, advice panel, trivia panel, word panel, animated scene, 90% transparent page overlay, hourly chart, Weather News section, seven-day list, and detail panel are rendered from the response data.
 9. Favorites and unit preferences are stored in `localStorage`.
 
@@ -61,6 +61,10 @@ The decorative weather scene is a canvas rendered from the active weather code g
 ## Weather Overlay
 
 The full-page overlay is a fixed, click-through canvas at 10% opacity, making it 90% transparent. It mirrors the active forecast with rain streaks, snow, fog bands, storm flashes, or light drifting particles and switches to a still frame when reduced motion is enabled.
+
+## Moon Phase
+
+The Today detail panel calculates moon phase locally from the forecast date using a synodic-month approximation. It renders the phase name and approximate illumination percentage without adding another network request.
 
 ## Local Weather Trivia
 

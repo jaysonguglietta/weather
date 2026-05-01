@@ -30,6 +30,7 @@ Then load the app in a browser and confirm:
 - A city or ZIP search loads a new forecast.
 - ZIP mode accepts a 5-digit US ZIP code and loads a forecast.
 - Today's Advice updates after each forecast load and after unit changes, including the dog park recommendation.
+- Moon phase renders in the Today panel with a phase name and illumination percentage.
 - Local Weather Trivia updates after each forecast load and unit change.
 - Weather Word of the Day renders a term, definition, example, and local forecast context.
 - Weather News loads National Weather Service alerts or shows fallback resource cards.

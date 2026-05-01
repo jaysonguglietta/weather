@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.10.0
+
+- Added daily moon phase with approximate illumination in the Today panel.
+
 ## 1.9.0
 
 - Added a 90% transparent whole-page weather overlay that mirrors the current local forecast.

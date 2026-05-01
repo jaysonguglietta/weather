@@ -174,6 +174,7 @@ const elements = {
   locationButton: document.querySelector("#locationButton"),
   locationInput: document.querySelector("#locationInput"),
   locationModeInputs: document.querySelectorAll("input[name='locationMode']"),
+  moonPhase: document.querySelector("#moonPhase"),
   newsList: document.querySelector("#newsList"),
   newsSummary: document.querySelector("#newsSummary"),
   outfitDecision: document.querySelector("#outfitDecision"),
@@ -443,6 +444,67 @@ function formatDay(value) {
   });
 }
 
+function formatMoonPhase(dateValue) {
+  const phase = calculateMoonPhase(dateValue);
+  if (!phase) {
+    return "--";
+  }
+
+  return `${phase.name} · ${formatNumber(phase.illumination)}% lit`;
+}
+
+function calculateMoonPhase(dateValue) {
+  const [year, month, day] = String(dateValue || "").split("-").map(Number);
+  if (!year || !month || !day) {
+    return null;
+  }
+
+  const synodicMonth = 29.530588853;
+  const knownNewMoonJulian = 2451550.1;
+  const date = Date.UTC(year, month - 1, day, 12);
+  const julianDate = date / 86400000 + 2440587.5;
+  const cyclePosition = ((julianDate - knownNewMoonJulian) / synodicMonth) % 1;
+  const phase = cyclePosition < 0 ? cyclePosition + 1 : cyclePosition;
+  const illumination = Math.round(((1 - Math.cos(phase * Math.PI * 2)) / 2) * 100);
+
+  return {
+    illumination,
+    name: moonPhaseName(phase)
+  };
+}
+
+function moonPhaseName(phase) {
+  if (phase < 0.03 || phase >= 0.97) {
+    return "New moon";
+  }
+
+  if (phase < 0.22) {
+    return "Waxing crescent";
+  }
+
+  if (phase < 0.28) {
+    return "First quarter";
+  }
+
+  if (phase < 0.47) {
+    return "Waxing gibbous";
+  }
+
+  if (phase < 0.53) {
+    return "Full moon";
+  }
+
+  if (phase < 0.72) {
+    return "Waning gibbous";
+  }
+
+  if (phase < 0.78) {
+    return "Last quarter";
+  }
+
+  return "Waning crescent";
+}
+
 function compassDirection(degrees) {
   if (degrees === null || degrees === undefined || Number.isNaN(Number(degrees))) {
     return "--";
@@ -646,6 +708,7 @@ function renderWeather() {
   elements.timezoneLabel.textContent = weather.timezone || "--";
   elements.sunrise.textContent = formatHour(weather.daily.sunrise[0]);
   elements.sunset.textContent = formatHour(weather.daily.sunset[0]);
+  elements.moonPhase.textContent = formatMoonPhase(weather.daily.time[0]);
   elements.uvIndex.textContent = formatNumber(weather.daily.uv_index_max[0], 1);
 
   const hours = getUpcomingHours(weather, 12);
