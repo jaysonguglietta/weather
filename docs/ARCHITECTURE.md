@@ -18,13 +18,15 @@ WeatherBoard is intentionally small: it is a static frontend app that talks dire
 3. City searches call Open-Meteo geocoding and use the first matching result.
 4. ZIP searches call Zippopotam.us to resolve a US ZIP code to coordinates.
 5. Forecast data is fetched with current, hourly, and daily fields in the selected unit system.
-6. The current panel, hourly chart, seven-day list, and detail panel are rendered from the same forecast response.
-7. Favorites and unit preferences are stored in `localStorage`.
+6. Weather News fetches active National Weather Service alerts for the selected coordinates.
+7. The current panel, hourly chart, Weather News section, seven-day list, and detail panel are rendered from the response data.
+8. Favorites and unit preferences are stored in `localStorage`.
 
 ## Data Sources
 
 Open-Meteo is used because it supports browser calls without an API key.
 Zippopotam.us is used for no-key US ZIP code lookup.
+The National Weather Service alerts API is used for location-specific Weather News.
 
 Forecast endpoint fields:
 
@@ -41,6 +43,7 @@ The app keeps state in a single in-memory object:
 - `lastLocation`: last loaded normalized location.
 - `location`: current normalized location.
 - `weather`: last forecast response.
+- `news`: last National Weather Service alert list.
 - `catsEnabled`: floating cat animation preference.
 - `locationMode`: selected City or ZIP search mode.
 

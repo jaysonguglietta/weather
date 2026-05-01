@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.0
+
+- Added a Weather News section with National Weather Service alerts and fallback weather-resource links.
+
 ## 1.2.0
 
 - Added an explicit City/ZIP selector and dedicated US ZIP code lookup.

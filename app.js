@@ -64,6 +64,8 @@ const elements = {
   locationButton: document.querySelector("#locationButton"),
   locationInput: document.querySelector("#locationInput"),
   locationModeInputs: document.querySelectorAll("input[name='locationMode']"),
+  newsList: document.querySelector("#newsList"),
+  newsSummary: document.querySelector("#newsSummary"),
   precipitation: document.querySelector("#precipitation"),
   pressure: document.querySelector("#pressure"),
   saveFavoriteButton: document.querySelector("#saveFavoriteButton"),
@@ -86,6 +88,7 @@ const state = {
   lastLocation: readJson(STORAGE_KEYS.lastLocation, null),
   location: null,
   locationMode: localStorage.getItem(STORAGE_KEYS.locationMode) || "city",
+  news: [],
   units: localStorage.getItem(STORAGE_KEYS.units) || "imperial",
   weather: null
 };
@@ -354,9 +357,18 @@ async function fetchForecast(location) {
   return fetchJson(`https://api.open-meteo.com/v1/forecast?${params}`);
 }
 
+async function fetchWeatherNews(location) {
+  const params = new URLSearchParams({
+    point: `${location.latitude.toFixed(4)},${location.longitude.toFixed(4)}`
+  });
+  const data = await fetchJson(`https://api.weather.gov/alerts/active?${params}`);
+  return data.features || [];
+}
+
 async function loadWeather(location) {
   state.location = location;
   setStatus(`Loading ${locationLabel(location)}...`);
+  renderNewsLoading(location);
   elements.saveFavoriteButton.disabled = true;
 
   try {
@@ -367,9 +379,21 @@ async function loadWeather(location) {
     renderWeather();
     setStatus(`Showing ${locationLabel(location)}.`);
     elements.saveFavoriteButton.disabled = false;
+    loadWeatherNews(location);
   } catch (error) {
     console.error(error);
     setStatus("Forecast service is unavailable right now.", "error");
+    renderNewsError();
+  }
+}
+
+async function loadWeatherNews(location) {
+  try {
+    state.news = await fetchWeatherNews(location);
+    renderWeatherNews(location);
+  } catch (error) {
+    console.info("Weather news unavailable.", error);
+    renderNewsError();
   }
 }
 
@@ -473,6 +497,124 @@ function renderDaily(daily) {
   });
 
   elements.dailyList.replaceChildren(...rows);
+}
+
+function renderNewsLoading(location) {
+  elements.newsSummary.textContent = "Loading";
+  elements.newsList.replaceChildren(createNewsCard({
+    source: "NWS",
+    title: `Checking alerts for ${locationLabel(location)}`,
+    body: "Pulling current watches, warnings, and advisories from the National Weather Service."
+  }));
+}
+
+function renderNewsError() {
+  elements.newsSummary.textContent = "Unavailable";
+  elements.newsList.replaceChildren(
+    createNewsCard({
+      source: "NWS",
+      title: "Weather news is unavailable",
+      body: "The forecast still works, but live alerts could not be loaded right now.",
+      url: "https://www.weather.gov/"
+    }),
+    ...createFallbackNewsCards()
+  );
+}
+
+function renderWeatherNews(location) {
+  const alerts = state.news
+    .map((feature) => feature.properties)
+    .filter(Boolean)
+    .slice(0, 3);
+
+  if (!alerts.length) {
+    elements.newsSummary.textContent = "No active alerts";
+    elements.newsList.replaceChildren(
+      createNewsCard({
+        source: "NWS",
+        title: `No active alerts for ${locationLabel(location)}`,
+        body: "There are no current National Weather Service watches, warnings, or advisories for this location.",
+        url: "https://www.weather.gov/alerts"
+      }),
+      ...createFallbackNewsCards().slice(0, 2)
+    );
+    return;
+  }
+
+  elements.newsSummary.textContent = `${alerts.length} active ${alerts.length === 1 ? "alert" : "alerts"}`;
+  elements.newsList.replaceChildren(...alerts.map((alert) => createAlertCard(alert)));
+}
+
+function createAlertCard(alert) {
+  const title = alert.headline || alert.event || "Weather alert";
+  const area = alert.areaDesc ? ` Areas: ${alert.areaDesc}` : "";
+  const instruction = alert.instruction || alert.description || "Review the latest guidance from the National Weather Service.";
+  const body = `${instruction}${area}`.slice(0, 210);
+
+  return createNewsCard({
+    body: body.length >= 210 ? `${body}...` : body,
+    className: "is-alert",
+    source: `${alert.severity || "NWS"} alert`,
+    time: alert.effective || alert.sent,
+    title,
+    url: alert["@id"] || alert.uri || "https://www.weather.gov/alerts"
+  });
+}
+
+function createFallbackNewsCards() {
+  return [
+    createNewsCard({
+      source: "Weather.gov",
+      title: "Weather safety resources",
+      body: "Preparedness guidance for severe storms, heat, flooding, winter weather, and more.",
+      url: "https://www.weather.gov/safety/"
+    }),
+    createNewsCard({
+      source: "SPC",
+      title: "Severe weather outlooks",
+      body: "National convective outlooks from the NOAA Storm Prediction Center.",
+      url: "https://www.spc.noaa.gov/products/outlook/"
+    }),
+    createNewsCard({
+      source: "NHC",
+      title: "Tropical weather updates",
+      body: "Hurricane and tropical storm updates from the National Hurricane Center.",
+      url: "https://www.nhc.noaa.gov/"
+    })
+  ];
+}
+
+function createNewsCard(item) {
+  const card = document.createElement("article");
+  card.className = `news-card ${item.className || ""}`.trim();
+
+  const safeBody = item.body || "Open the source for the latest weather information.";
+  const meta = document.createElement(item.time ? "time" : "span");
+  meta.textContent = item.time ? formatDateTime(item.time) : item.source || "Weather";
+  if (item.time) {
+    meta.dateTime = item.time;
+  } else {
+    meta.className = "news-source";
+  }
+
+  const title = document.createElement("h3");
+  title.textContent = item.title || "Weather update";
+
+  const body = document.createElement("p");
+  body.textContent = safeBody;
+
+  card.append(meta, title, body);
+
+  if (item.url) {
+    const link = document.createElement("a");
+    link.href = item.url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = "Read update";
+    card.append(link);
+  }
+
+  return card;
 }
 
 function drawWeatherScene(group = "clear", isDay = true) {

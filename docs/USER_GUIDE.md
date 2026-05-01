@@ -8,6 +8,10 @@ Choose `City` or `ZIP`, enter the location, and submit the search. City searches
 
 Select `Use my location` and approve the browser permission request. If reverse geocoding is unavailable, WeatherBoard still loads a forecast using the device coordinates.
 
+## Weather News
+
+Weather News shows current National Weather Service alerts for the selected location. If there are no active alerts, it shows useful national weather resources.
+
 ## Change Units
 
 Use the `F` and `C` segmented control in the header. WeatherBoard refetches the forecast using the selected unit system.

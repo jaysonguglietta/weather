@@ -9,6 +9,7 @@ WeatherBoard is a responsive, installable browser weather app. It uses the free 
 - Dedicated US ZIP code entry through Zippopotam.us.
 - Browser geolocation support.
 - Next-12-hours trend chart and compact hourly forecast cards.
+- Weather News section with location-specific National Weather Service alerts and weather-resource links.
 - Seven-day forecast with high and low temperature ranges.
 - Saved locations stored locally in the browser.
 - Optional floating cat heads that bounce around the screen.
@@ -47,6 +48,7 @@ WeatherBoard calls:
 - `https://geocoding-api.open-meteo.com/v1/reverse`
 - `https://api.open-meteo.com/v1/forecast`
 - `https://api.zippopotam.us/us/{zip}`
+- `https://api.weather.gov/alerts/active?point={lat},{lon}`
 
 See `docs/ARCHITECTURE.md` for implementation details.
 
