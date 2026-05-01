@@ -559,6 +559,43 @@ button:focus-visible,
   background: linear-gradient(180deg, #fff8f2, rgba(238, 246, 242, 0.72));
 }
 
+.trivia-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.trivia-card {
+  display: grid;
+  align-content: start;
+  gap: 0.5rem;
+  min-height: 10rem;
+  border: 1px solid rgba(19, 124, 127, 0.18);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 252, 247, 0.78));
+  padding: 0.85rem;
+}
+
+.trivia-card span {
+  color: var(--teal-dark);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.trivia-card strong {
+  color: var(--ink);
+  font-size: 1.05rem;
+  line-height: 1.2;
+}
+
+.trivia-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
 .hourly-list {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -766,6 +803,10 @@ button:focus-visible,
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .trivia-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .news-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -819,6 +860,10 @@ button:focus-visible,
   }
 
   .advice-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .trivia-grid {
     grid-template-columns: 1fr;
   }
 

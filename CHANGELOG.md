@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.0
+
+- Added Local Weather Trivia cards for daylight duration, temperature swing, humidity feel, wind direction, and rain probability.
+
 ## 1.6.0
 
 - Added animated weather scenes with falling rain, snow, drifting fog, storm flashes, moving clouds, and wind-blown leaves.

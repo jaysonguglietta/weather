@@ -88,6 +88,8 @@ const elements = {
   sunset: document.querySelector("#sunset"),
   timezoneLabel: document.querySelector("#timezoneLabel"),
   trendCanvas: document.querySelector("#trendCanvas"),
+  triviaList: document.querySelector("#triviaList"),
+  triviaSummary: document.querySelector("#triviaSummary"),
   umbrellaDecision: document.querySelector("#umbrellaDecision"),
   umbrellaReason: document.querySelector("#umbrellaReason"),
   unitInputs: document.querySelectorAll("input[name='units']"),
@@ -237,6 +239,50 @@ function formatNumber(value, digits = 0) {
     maximumFractionDigits: digits,
     minimumFractionDigits: digits
   });
+}
+
+function formatDegreeDelta(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return "--";
+  }
+
+  return `${formatNumber(Math.abs(value))}°${unitConfig().temperature}`;
+}
+
+function parseLocalTimeMinutes(value) {
+  const time = String(value || "").split("T")[1] || "";
+  const [hourText, minuteText = "0"] = time.split(":");
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+
+  if (Number.isNaN(hour) || Number.isNaN(minute)) {
+    return null;
+  }
+
+  return hour * 60 + minute;
+}
+
+function formatDuration(minutes) {
+  if (minutes === null || minutes === undefined || Number.isNaN(Number(minutes)) || minutes <= 0) {
+    return "--";
+  }
+
+  const hours = Math.floor(minutes / 60);
+  const remainder = Math.round(minutes % 60);
+  return remainder ? `${hours} hr ${remainder} min` : `${hours} hr`;
+}
+
+function directionName(compass) {
+  return {
+    E: "east",
+    N: "north",
+    NE: "northeast",
+    NW: "northwest",
+    S: "south",
+    SE: "southeast",
+    SW: "southwest",
+    W: "west"
+  }[compass] || "variable directions";
 }
 
 function formatHour(value) {
@@ -478,6 +524,7 @@ function renderWeather() {
 
   const hours = getUpcomingHours(weather, 12);
   renderDailyAdvice(current, weather.daily, hours);
+  renderWeatherTrivia(current, weather.daily, hours);
   renderHourly(hours);
   renderDaily(weather.daily);
   drawWeatherScene(codeMeta.group, Boolean(current.is_day), current.wind_speed_10m);
@@ -569,6 +616,100 @@ function renderDailyAdvice(current, daily, hours) {
   elements.dogParkReason.textContent = advice.dogPark.reason;
   elements.extraDecision.textContent = advice.extra.title;
   elements.extraReason.textContent = advice.extra.reason;
+}
+
+function renderWeatherTrivia(current, daily, hours) {
+  const trivia = buildWeatherTrivia(current, daily, hours, state.location);
+  const place = state.location ? state.location.name : "this location";
+  elements.triviaSummary.textContent = `${trivia.length} facts for ${place}`;
+  elements.triviaList.replaceChildren(...trivia.map(createTriviaCard));
+}
+
+function createTriviaCard(item) {
+  const card = document.createElement("article");
+  card.className = "trivia-card";
+
+  const label = document.createElement("span");
+  label.textContent = item.label;
+
+  const title = document.createElement("strong");
+  title.textContent = item.title;
+
+  const body = document.createElement("p");
+  body.textContent = item.body;
+
+  card.append(label, title, body);
+  return card;
+}
+
+function buildWeatherTrivia(current, daily, hours, location) {
+  const units = unitConfig();
+  const place = (location && location.name) || "This location";
+  const high = daily.temperature_2m_max[0];
+  const low = daily.temperature_2m_min[0];
+  const sunrise = daily.sunrise[0];
+  const sunset = daily.sunset[0];
+  const sunriseMinutes = parseLocalTimeMinutes(sunrise);
+  const sunsetMinutes = parseLocalTimeMinutes(sunset);
+  const daylight = sunriseMinutes !== null && sunsetMinutes !== null
+    ? (sunsetMinutes - sunriseMinutes + 1440) % 1440
+    : null;
+  const humidity = Number(current.relative_humidity_2m || 0);
+  const windCompass = compassDirection(current.wind_direction_10m);
+  const gusts = Number(current.wind_gusts_10m || 0);
+  const maxPrecip = Math.max(
+    daily.precipitation_probability_max[0] || 0,
+    ...hours.map((hour) => hour.precipitation || 0)
+  );
+
+  return [
+    {
+      body: `Sunrise is ${formatHour(sunrise)} and sunset is ${formatHour(sunset)} in ${place}.`,
+      label: "Sun clock",
+      title: `${formatDuration(daylight)} daylight`
+    },
+    {
+      body: `That is the gap between today's forecast low and high, which is why layers can matter more than the headline temperature.`,
+      label: "Temp swing",
+      title: `${formatDegreeDelta(Number(high) - Number(low))} spread`
+    },
+    {
+      body: humidityTrivia(humidity, current.temperature_2m, current.apparent_temperature),
+      label: "Humidity",
+      title: `${formatNumber(humidity)}% relative`
+    },
+    {
+      body: windCompass === "--"
+        ? `Wind direction is variable right now, with gusts near ${formatNumber(gusts)} ${units.speed}.`
+        : `A ${windCompass} wind means the air is arriving from the ${directionName(windCompass)}. Gusts are near ${formatNumber(gusts)} ${units.speed}.`,
+      label: "Wind clue",
+      title: `${formatNumber(current.wind_speed_10m)} ${units.speed} ${windCompass}`
+    },
+    {
+      body: "Forecast probability is about whether measurable precipitation reaches the area, not how hard it falls once it starts.",
+      label: "Rain math",
+      title: `${formatNumber(maxPrecip)}% peak chance`
+    }
+  ];
+}
+
+function humidityTrivia(humidity, temperature, apparentTemperature) {
+  const apparentDelta = Number(apparentTemperature) - Number(temperature);
+
+  if (Number.isFinite(apparentDelta) && Math.abs(apparentDelta) >= 2) {
+    const direction = apparentDelta > 0 ? "warmer" : "cooler";
+    return `The feels-like reading is ${formatDegreeDelta(apparentDelta)} ${direction} than the thermometer, helped by humidity, wind, and sun angle.`;
+  }
+
+  if (humidity >= 80) {
+    return "Moist air slows evaporation from skin, so warm temperatures can feel heavier than the number suggests.";
+  }
+
+  if (humidity <= 35) {
+    return "Dry air lets moisture evaporate quickly, which can make shade and evening air feel sharper.";
+  }
+
+  return "That sits in a moderate range: enough moisture to notice, but not usually the sticky end of the scale.";
 }
 
 function buildDailyAdvice(current, daily, hours) {
