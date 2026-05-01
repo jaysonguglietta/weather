@@ -13,6 +13,7 @@ WeatherBoard is a responsive, installable browser weather app. It uses the free 
 - Local Weather Trivia cards for daylight, temperature swing, humidity, wind direction, and precipitation odds.
 - Weather Word of the Day with a local glossary term tied to the current forecast pattern.
 - Today's Horoscope with a saved zodiac sign and forecast-aware daily reading.
+- One Happy News Story with a local daily bright-side dispatch tied to the current forecast.
 - Weather News section with location-specific National Weather Service alerts and weather-resource links.
 - Seven-day forecast with high and low temperature ranges.
 - Animated weather scene with falling rain, snow, fog drift, storm flashes, and wind-blown leaves.

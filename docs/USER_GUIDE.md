@@ -38,6 +38,10 @@ Weather Word of the Day introduces one glossary term for the loaded forecast. It
 
 Enter a zodiac sign and select `Show` to see a daily reading. WeatherBoard saves the sign in the current browser and tunes the reading to the loaded forecast and moon phase.
 
+## One Happy News Story
+
+One Happy News Story shows a daily positive story from WeatherBoard's local bright-side set. It changes with the day and selected forecast, and includes a weather tie-in for the loaded location.
+
 ## Change Units
 
 Use the `F` and `C` segmented control in the header. WeatherBoard refetches the forecast using the selected unit system.

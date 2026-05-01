@@ -202,6 +202,39 @@ const HOROSCOPE_GROUP_NOTES = {
   storm: "protect your attention before reacting to every spark"
 };
 
+const HAPPY_NEWS_STORIES = [
+  {
+    action: "Look for one tiny repair you can make easier for somebody else.",
+    body: "A neighbor turned a spare shelf into a free little pantry, and by sunset it had traded soup, pasta, tea, and a handwritten thank-you note. The best part was not the shelf; it was the permission it gave people to quietly help each other.",
+    title: "A Little Pantry Finds Its People"
+  },
+  {
+    action: "Send a short note before the day gets noisy.",
+    body: "A class wrote postcards to workers who keep the lights on, buses moving, and parks clean. The replies came back with doodles, stories, and proof that a small thank-you can travel farther than expected.",
+    title: "Thank-You Notes Make a Round Trip"
+  },
+  {
+    action: "Share the small thing that made your day better.",
+    body: "Someone left sidewalk chalk beside a puddle and invited passersby to draw the sun. By afternoon, the path had flowers, stars, jokes, and a few heroic attempts at clouds.",
+    title: "Sidewalk Art Turns Weather Into a Smile"
+  },
+  {
+    action: "Give away one useful thing you do not need today.",
+    body: "A community swap table started with three books and a lamp. It ended the day with seedlings, mittens, recipes, and two people realizing they lived close enough to trade garden tips.",
+    title: "The Swap Table Gets a Second Life"
+  },
+  {
+    action: "Make one errand a little kinder than required.",
+    body: "At a busy corner, a few people began waiting an extra beat so others could cross without hurrying. Nobody announced it, but the whole intersection seemed to exhale.",
+    title: "A Crosswalk Discovers Patience"
+  },
+  {
+    action: "Put something hopeful where future-you will find it.",
+    body: "A library tucked surprise bookmarks into returned books, each with a tiny recommendation and a kind sentence. Readers found them days later, like messages from a friend they had not met yet.",
+    title: "Bookmarks Carry Good News Forward"
+  }
+];
+
 const elements = {
   adviceSummary: document.querySelector("#adviceSummary"),
   catField: document.querySelector("#catField"),
@@ -222,6 +255,11 @@ const elements = {
   favoriteList: document.querySelector("#favoriteList"),
   feelsLike: document.querySelector("#feelsLike"),
   gusts: document.querySelector("#gusts"),
+  happyNewsBody: document.querySelector("#happyNewsBody"),
+  happyNewsSource: document.querySelector("#happyNewsSource"),
+  happyNewsSummary: document.querySelector("#happyNewsSummary"),
+  happyNewsTitle: document.querySelector("#happyNewsTitle"),
+  happyNewsWeather: document.querySelector("#happyNewsWeather"),
   hourlyList: document.querySelector("#hourlyList"),
   hourlySummary: document.querySelector("#hourlySummary"),
   horoscopeFocus: document.querySelector("#horoscopeFocus"),
@@ -780,6 +818,7 @@ function renderWeather() {
   renderWeatherTrivia(current, weather.daily, hours);
   renderWeatherWord(current, weather.daily, hours);
   renderHoroscope(current, weather.daily, hours);
+  renderHappyNews(current, weather.daily, hours);
   renderHourly(hours);
   renderDaily(weather.daily);
   drawWeatherScene(codeMeta.group, Boolean(current.is_day), current.wind_speed_10m);
@@ -1102,6 +1141,64 @@ function buildHoroscopeWeatherCue({ current, daily, groupNote, hours, meta, plac
   );
 
   return `${meta.label} in ${place}; ${groupNote}. ${formatTempText(low)}-${formatTempText(high)}, ${formatNumber(maxPrecip)}% peak rain chance.`;
+}
+
+function renderHappyNews(current = null, daily = null, hours = []) {
+  if (!current || !daily) {
+    elements.happyNewsSummary.textContent = "Daily bright side";
+    elements.happyNewsSource.textContent = "WeatherBoard Good News Desk";
+    elements.happyNewsTitle.textContent = "Choose a location";
+    elements.happyNewsBody.textContent = "A cheerful daily story will appear after the forecast loads.";
+    elements.happyNewsWeather.textContent = "Weather tie-in: --";
+    return;
+  }
+
+  const story = buildHappyNewsStory(current, daily, hours, state.location);
+  elements.happyNewsSummary.textContent = story.summary;
+  elements.happyNewsSource.textContent = story.source;
+  elements.happyNewsTitle.textContent = story.title;
+  elements.happyNewsBody.textContent = story.body;
+  elements.happyNewsWeather.textContent = `Weather tie-in: ${story.weatherTieIn}`;
+}
+
+function buildHappyNewsStory(current, daily, hours, location) {
+  const date = daily.time[0];
+  const group = weatherGroup(current.weather_code);
+  const place = location ? location.name : "your forecast";
+  const seed = Math.abs(hashString(`${date}-${group}-${location ? location.id : "default"}`));
+  const story = HAPPY_NEWS_STORIES[seed % HAPPY_NEWS_STORIES.length];
+  const maxPrecip = Math.max(
+    daily.precipitation_probability_max[0] || 0,
+    ...hours.map((hour) => hour.precipitation || 0)
+  );
+
+  return {
+    body: `${story.body} ${story.action}`,
+    source: "WeatherBoard Good News Desk",
+    summary: `${formatDay(date)} bright side`,
+    title: story.title,
+    weatherTieIn: happyNewsWeatherTieIn({
+      group,
+      maxPrecip,
+      place,
+      temperature: current.temperature_2m,
+      wind: current.wind_speed_10m
+    })
+  };
+}
+
+function happyNewsWeatherTieIn({ group, maxPrecip, place, temperature, wind }) {
+  const units = unitConfig();
+  const notes = {
+    clear: `${place} has enough clear-sky energy for noticing the good stuff on purpose.`,
+    cloud: `Clouds over ${place} make this a good day for small indoor kindness and steady plans.`,
+    fog: `Fog around ${place} is a reminder that cheerful things can still be close, even when the edges are soft.`,
+    rain: `Rain chances near ${formatNumber(maxPrecip)}% make this a fine day for warm lights and generous timing.`,
+    snow: `Snow in the pattern gives ${place} a reason to slow down and make room for comfort.`,
+    storm: `Stormy signals near ${place} make calm check-ins and prepared neighbors especially good news.`
+  };
+
+  return `${notes[group] || notes.cloud} Current air is ${formatTempText(temperature)} with wind near ${formatNumber(wind)} ${units.speed}.`;
 }
 
 function buildDailyAdvice(current, daily, hours) {
@@ -2552,6 +2649,7 @@ function init() {
   bindEvents();
   updateLocationMode();
   renderHoroscope();
+  renderHappyNews();
   renderFavorites();
   drawWeatherScene("clear", true, 0);
   drawWeatherOverlay("clear", true, 0);

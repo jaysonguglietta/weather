@@ -734,6 +734,59 @@ button:focus-visible,
   font-size: 0.9rem;
 }
 
+.happy-news-card {
+  display: grid;
+  grid-template-columns: minmax(12rem, 0.32fr) minmax(0, 1fr);
+  gap: 1rem;
+  border: 1px solid rgba(19, 124, 127, 0.2);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(135deg, rgba(19, 124, 127, 0.12), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(238, 246, 242, 0.82));
+  padding: 1rem;
+}
+
+.happy-news-title {
+  display: grid;
+  align-content: start;
+  gap: 0.45rem;
+}
+
+.happy-news-title span {
+  color: var(--teal-dark);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.happy-news-title strong {
+  color: var(--ink);
+  font-size: 1.45rem;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+
+.happy-news-copy {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.happy-news-copy p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.happy-news-copy p:first-child {
+  color: var(--ink);
+  font-weight: 750;
+}
+
+.happy-news-copy p:last-child {
+  border-top: 1px solid rgba(19, 124, 127, 0.18);
+  padding-top: 0.65rem;
+}
+
 .hourly-list {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -950,7 +1003,8 @@ button:focus-visible,
   }
 
   .word-card,
-  .horoscope-card {
+  .horoscope-card,
+  .happy-news-card {
     grid-template-columns: 1fr;
   }
 }
